@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Env
+.env
+.envrc
+
+# Index (generated, do not commit)
+*.pkl
+data/vault_index.pkl
+
+# Personal data (never commit)
+data/notion/
+data/gmail_self/
+data/chat_exports/
+
+# uv
+.python-version
+uv.lock
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
