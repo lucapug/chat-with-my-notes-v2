@@ -1,9 +1,15 @@
 """Ingest orchestrator — migrated from vault_ingest.py (sprint1-hermes-backup).
 
 Collects documents from configured adapters, builds a minsearch index,
-and saves it to settings.vault_index_path.
+and saves it to settings.vault_index_path (or --output if run as CLI).
+
+Usage:
+    python -m src.ingest.orchestrator --source notion
+    python -m src.ingest.orchestrator --source all
+    python -m src.ingest.orchestrator --source notion --output /path/to/index.pkl
 """
 
+import argparse
 import logging
 import time
 from importlib import import_module
@@ -42,10 +48,17 @@ def _load_adapter(source: str):
     return module.ingest, display_name
 
 
-def run_ingest(source: str = "notion") -> int:
-    """Run ingestion for the given source. Returns number of indexed documents."""
+def run_ingest(source: str = "notion", output_path: str | None = None) -> int:
+    """Run ingestion for the given source. Returns number of indexed documents.
+
+    Args:
+        source: Adapter name to run, or 'all' for every adapter.
+        output_path: Override for the index file path.
+                     Defaults to settings.vault_index_path.
+    """
     sources = list(ADAPTERS) if source == "all" else [source]
     all_docs: list[dict] = []
+    t_total = time.monotonic()
 
     for src in sources:
         ingest_fn, display_name = _load_adapter(src)
@@ -62,8 +75,53 @@ def run_ingest(source: str = "notion") -> int:
 
     index = minsearch.Index(text_fields=TEXT_FIELDS, keyword_fields=KEYWORD_FIELDS)
     index.fit(all_docs)
-    index.save(str(settings.vault_index_path))
+
+    dest = output_path or str(settings.vault_index_path)
+    index.save(dest)
+
+    total_elapsed = time.monotonic() - t_total
     logger.info(
-        "Index saved to %s (%d documents)", settings.vault_index_path, len(all_docs)
+        "Index saved to %s — %d documents indexed in %.1fs",
+        dest,
+        len(all_docs),
+        total_elapsed,
     )
     return len(all_docs)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Ingest vault notes into a minsearch index"
+    )
+    parser.add_argument(
+        "--source",
+        type=str,
+        default="notion",
+        choices=[*ADAPTERS, "all"],
+        help="Data source to ingest (default: notion). 'all' runs every adapter.",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default=None,
+        help=(
+            "Output path for the serialized index. "
+            "Defaults to VAULT_INDEX_PATH from .env / config.py."
+        ),
+    )
+    parser.add_argument(
+        "--incremental",
+        action="store_true",
+        help="Only ingest new/changed files (not yet implemented).",
+    )
+    args = parser.parse_args()
+
+    if args.incremental:
+        logger.warning("--incremental is not yet implemented. Running full ingestion.")
+
+    logging.basicConfig(level=settings.log_level)
+    run_ingest(source=args.source, output_path=args.output)
+
+
+if __name__ == "__main__":
+    main()
