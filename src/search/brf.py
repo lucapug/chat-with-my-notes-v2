@@ -23,15 +23,34 @@ logger = logging.getLogger(__name__)
 DEFAULT_BOOST: dict[str, float] = {"title": 3.0, "text": 1.0}
 RRF_K = 60
 
-_index: minsearch.Index | None = None
+_index: minsearch.AppendableIndex | None = None
 
 
-def _load_index() -> minsearch.Index:
+def _load_index() -> minsearch.AppendableIndex:
     global _index
     if _index is None:
-        _index = minsearch.Index.load(str(settings.vault_index_path))
+        _index = minsearch.AppendableIndex.load(str(settings.vault_index_path))
         logger.info("Loaded index from %s", settings.vault_index_path)
     return _index
+
+
+def append_documents(docs: list[dict]) -> int:
+    """Append new documents to the in-memory index and persist to disk.
+
+    Safe to call while the server is running: mutates _index in-place so
+    subsequent search() calls see the new documents immediately, then
+    saves to settings.vault_index_path.
+
+    Returns the number of appended documents.
+    """
+    if not docs:
+        return 0
+    idx = _load_index()
+    for doc in docs:
+        idx.append(doc)
+    idx.save(str(settings.vault_index_path))
+    logger.info("Appended %d documents to BRF index (%s)", len(docs), settings.vault_index_path)
+    return len(docs)
 
 
 def get_index_info() -> dict:

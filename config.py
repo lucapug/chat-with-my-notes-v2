@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     # Index
     vault_index_path: Path = Path("data/vault_index.pkl")
 
+    # Embedding
+    ollama_embed_url: str = "http://localhost:11434/v1"
+    embed_model: str = "nomic-embed-text"
+    semantic_index_path: Path = Path("data/semantic_index.pkl")
+
     # Data sources
     vault_notion_dir: Path = Path("data/notion")
     vault_pages_map: Path = Path("data/notion_pages_map.json")

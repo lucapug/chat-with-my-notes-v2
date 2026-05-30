@@ -73,7 +73,7 @@ def run_ingest(source: str = "notion", output_path: str | None = None) -> int:
         logger.warning("No documents produced — index not written.")
         return 0
 
-    index = minsearch.Index(text_fields=TEXT_FIELDS, keyword_fields=KEYWORD_FIELDS)
+    index = minsearch.AppendableIndex(text_fields=TEXT_FIELDS, keyword_fields=KEYWORD_FIELDS)
     index.fit(all_docs)
 
     dest = output_path or str(settings.vault_index_path)
