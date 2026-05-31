@@ -28,3 +28,12 @@ class IngestRequest(BaseModel):
 class IngestResponse(BaseModel):
     documents_indexed: int
     source: str
+
+
+class QueryRequest(BaseModel):
+    question: str
+
+
+class QueryResponse(BaseModel):
+    answer: str
+    sources: list[str]
