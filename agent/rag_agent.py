@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass, field
 
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from api.schemas import ChatRequest, ChatResponse, ChunkResult
@@ -35,7 +35,7 @@ class VaultDeps:
     retrieved_chunks: list[dict] = field(default_factory=list)
 
 
-_model = OpenAIModel(
+_model = OpenAIChatModel(
     settings.ollama_generation_model,
     provider=OpenAIProvider(
         base_url=settings.ollama_generation_url,
@@ -112,4 +112,4 @@ async def ask(request: ChatRequest) -> ChatResponse:
         )
         for r in deps.retrieved_chunks
     ]
-    return ChatResponse(answer=result.data, sources=sources)
+    return ChatResponse(answer=result.output, sources=sources)
