@@ -19,6 +19,8 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+BATCH_SIZE = 32
+
 _vector_index: minsearch.VectorSearch | None = None
 
 
@@ -31,16 +33,38 @@ async def embed(texts: list[str]) -> list[list[float]]:
     Returns a list of float vectors (one per input text).
     Raises httpx.HTTPError on network or API failure.
     """
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        resp = await client.post(
-            f"{settings.ollama_embed_url}/embeddings",
-            json={"model": settings.embed_model, "input": texts},
-        )
-        resp.raise_for_status()
-        data = resp.json()
+    base_url = settings.ollama_embed_url
+    if base_url.endswith("/v1"):
+        base_url = base_url[:-3]
+    embeddings: list[list[float]] = []
+    total = len(texts)
+    total_batches = (total + BATCH_SIZE - 1) // BATCH_SIZE
 
-    # Ollama returns {"embeddings": [[...], ...]} for batch input
-    return data["embeddings"]
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        for i in range(total_batches):
+            start = i * BATCH_SIZE
+            end = min(start + BATCH_SIZE, total)
+            logger.info("Embedding batch %d/%d...", i + 1, total_batches)
+            logger.debug(
+                "Embedding request url=%s batch_size=%d preview=%r",
+                f"{base_url}/api/embed",
+                end - start,
+                texts[start][:100] if texts[start:] else "",
+            )
+            batch_texts = [t[:2000] for t in texts[start:end]]
+            resp = await client.post(
+                f"{base_url}/api/embed",
+                json={"model": settings.embed_model, "input": batch_texts},
+            )
+            try:
+                resp.raise_for_status()
+            except httpx.HTTPStatusError:
+                logger.error("Embed 400 response body: %s", resp.text)
+                raise
+            data = resp.json()
+            embeddings.extend(data["embeddings"])
+
+    return embeddings
 
 
 # ── Index build ───────────────────────────────────────────────────────────────
@@ -133,20 +157,3 @@ async def search(query: str, top_k: int = 5) -> list[dict]:
     query_vec_list = await embed([query])
     query_vec = np.array(query_vec_list[0], dtype=np.float32)
     return vs.search(query_vec, num_results=top_k)
-
-    chunks: list[dict] = index["chunks"]
-    embeddings: np.ndarray = index["embeddings"]
-
-    query_vec_list = await embed([query])
-    query_vec = np.array(query_vec_list[0], dtype=np.float32)
-
-    scores = _cosine_similarity(query_vec, embeddings)
-    top_indices = np.argsort(scores)[::-1][:top_k]
-
-    results = []
-    for i in top_indices:
-        chunk = dict(chunks[i])
-        chunk["score"] = float(scores[i])
-        results.append(chunk)
-
-    return results

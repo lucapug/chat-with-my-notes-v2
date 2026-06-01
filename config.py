@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -25,6 +26,11 @@ class Settings(BaseSettings):
     # Data sources
     vault_notion_dir: Path = Path("data/notion")
     vault_pages_map: Path = Path("data/notion_pages_map.json")
+
+    # Fallback cloud — Z.AI
+    zai_api_key: Optional[str] = None
+    zai_base_url: str = "https://api.z.ai/api/paas/v4/"
+    zai_model: str = "glm-4.7"
 
     # API
     app_port: int = 8000

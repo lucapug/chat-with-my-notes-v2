@@ -24,7 +24,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
 @router.post("/ingest", response_model=IngestResponse)
 async def ingest(request: IngestRequest) -> IngestResponse:
     try:
-        count = await asyncio.to_thread(run_ingest, source=request.source)
+        count = await run_ingest(source=request.source)
         return IngestResponse(documents_indexed=count, source=request.source)
     except Exception as e:
         logger.error("ingest error: %s", e)

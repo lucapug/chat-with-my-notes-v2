@@ -10,6 +10,7 @@ Usage:
 """
 
 import argparse
+import asyncio
 import logging
 import time
 from importlib import import_module
@@ -17,6 +18,7 @@ from importlib import import_module
 import minsearch
 
 from config import settings
+from src.search import semantic
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +50,7 @@ def _load_adapter(source: str):
     return module.ingest, display_name
 
 
-def run_ingest(source: str = "notion", output_path: str | None = None) -> int:
+async def run_ingest(source: str = "notion", output_path: str | None = None) -> int:
     """Run ingestion for the given source. Returns number of indexed documents.
 
     Args:
@@ -78,6 +80,11 @@ def run_ingest(source: str = "notion", output_path: str | None = None) -> int:
 
     dest = output_path or str(settings.vault_index_path)
     index.save(dest)
+
+    try:
+        await semantic.embed_documents(all_docs)
+    except Exception:
+        logger.exception("Semantic index build failed")
 
     total_elapsed = time.monotonic() - t_total
     logger.info(
@@ -120,7 +127,7 @@ def main() -> None:
         logger.warning("--incremental is not yet implemented. Running full ingestion.")
 
     logging.basicConfig(level=settings.log_level)
-    run_ingest(source=args.source, output_path=args.output)
+    asyncio.run(run_ingest(source=args.source, output_path=args.output))
 
 
 if __name__ == "__main__":
