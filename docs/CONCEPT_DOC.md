@@ -428,7 +428,7 @@ a `chunk_id` field yet. Required before deletion/update detection can be added.
 - Hardcoded paths, urllib.request, sync code
 - Source: `sprint1-hermes-backup` repository
 
-### Sprint 3 — Phase 1–2 (May 2026): v2 scaffolding + migration
+### Sprint 1 — Week 3 (May 2026): v2 scaffolding + migration
 - New repo `chat-with-my-notes-v2` with pydantic-ai + FastAPI
 - Migrated: `brf.py` (vault_search.py), `orchestrator.py` (vault_ingest.py),
   `adapters/notion.py`, `evaluation/judge.py`, `evaluation/golden_set.py`
@@ -437,7 +437,7 @@ a `chunk_id` field yet. Required before deletion/update detection can be added.
 - `pyproject.toml` fixed: `hatchling` requires explicit `packages` list when
   project name has hyphens; `pydantic-ai[openai]` extra does not exist in v1
 
-### Sprint 3 — Phase 3 (May 2026): semantic search + incremental index
+### Sprint 1 — Week 3 (May 2026): semantic search + incremental index
 - Added `src/search/semantic.py`: Ollama embeddings + `minsearch.VectorSearch`
 - Added `embed_documents()` and `append_documents()` to semantic.py
 - Migrated `minsearch.Index` → `minsearch.AppendableIndex` in orchestrator + brf
@@ -445,7 +445,7 @@ a `chunk_id` field yet. Required before deletion/update detection can be added.
 - Config extended: `ollama_embed_url`, `embed_model`, `semantic_index_path`
 - Commit: `a567ee2`
 
-### Sprint 3 — Phase 4 (May–June 2026): RAG runtime + API
+### Sprint 1 — Week 4 (May–June 2026): RAG runtime + API
 - Added `src/search/fusion.py`: `rrf_fuse(brf_results, semantic_results)`
 - Rewrote `agent/rag_agent.py`: hybrid search via `asyncio.gather`, graceful
   degradation with `return_exceptions=True`, `OpenAIChatModel` + `OpenAIProvider`
