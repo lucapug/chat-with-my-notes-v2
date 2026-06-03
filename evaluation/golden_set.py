@@ -1,92 +1,97 @@
 """Golden queries for Phase 3 evaluation.
 
-This module contains the bilingual Golden Question set used by the
-RAG evaluation pipeline and the upcoming Search Eval pipeline.
+This module loads the golden-set fenced JSON block from the canonical
+project document `docs/CONCEPT_DOC.md`.
 
 Design rationale:
-- User-facing queries are in Italian.
-- Each query is translated internally to English via gemma4:e4b,
-  enabling dual-language TF-IDF retrieval.
-- The system performs both Italian and English retrieval,
-  then fuses rankings with Reciprocal Rank Fusion (RRF, k=60).
-- The bilingual layer is an implementation detail; the user always
-  interacts in Italian.
-- `expected_chunk_ids` is included for Week 5 Search Eval once chunk_id
-  stability is available.
+- The golden question set is curated in the source-of-truth documentation.
+- Evaluation code reads the JSON block directly instead of duplicating data.
+- Queries are authored in Italian for the user-facing interface.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import json
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+
+DEFAULT_CONCEPT_DOC_PATH = Path(__file__).resolve().parent.parent / "docs" / "CONCEPT_DOC.md"
+GOLDEN_SET_FENCE_RE = re.compile(r"^```golden-set\s*\n(.*?)\n```", re.DOTALL | re.MULTILINE)
 
 
 @dataclass(frozen=True)
 class GoldenQuery:
     id: str
+    topic: str
+    query: str
     query_it: str
     query_en: str
-    topic: str
     source_hint: str
     characteristic: str
     query_type: str
     target_sources: str
-    expected_chunk_ids: list[str] = field(default_factory=list)
+    expected_chunk_ids: list[str]
+    expected_answer: str | None = None
 
 
-GOLDEN_SET: list[GoldenQuery] = [
-    GoldenQuery(
-        id="Q1",
-        query_it="Quali sono le mie spese tecnologiche fisse annuali per il lavoro?",
-        query_en="What are my fixed annual technology expenses for work?",
-        topic="Spese Tecnologiche",
-        source_hint="Cross-source (Notion + Gmail)",
-        characteristic="Numerically verifiable",
-        query_type="aggregation",
-        target_sources="data/notion/ + data/gmail_self/",
-    ),
-    GoldenQuery(
-        id="Q2",
-        query_it="In quale corso ho utilizzato Gitpod?",
-        query_en="Which course did I use Gitpod in?",
-        topic="Gitpod",
-        source_hint="data/notion/",
-        characteristic="Deep retrieval on nested subpages",
-        query_type="lookup",
-        target_sources="data/notion/",
-    ),
-    GoldenQuery(
-        id="Q3",
-        query_it="Quanti repositories privati sono inclusi nel piano free di Oxen.ai?",
-        query_en="How many private repositories are included in the Oxen.ai free plan?",
-        topic="Oxen.ai",
-        source_hint="data/notion/",
-        characteristic="Cross-language BRF + callout content",
-        query_type="lookup",
-        target_sources="data/notion/",
-    ),
-    GoldenQuery(
-        id="Q4",
-        query_it="Quali differenti tools e tecnologie ho usato nel corso MLOps di DTC rispetto a quelle usate in MLOps in 4 Weeks?",
-        query_en="What different tools and technologies did I use in the DTC MLOps course compared to those used in MLOps in 4 Weeks?",
-        topic="MLOps Tools Comparison",
-        source_hint="data/notion/",
-        characteristic="Multi-chunk aggregation and comparison",
-        query_type="comparison",
-        target_sources="data/notion/",
-    ),
-    GoldenQuery(
-        id="Q5",
-        query_it="Quali parametri abbiamo stimato durante il lavoro al CNR usando la grid search?",
-        query_en="What parameters did we estimate during CNR work using grid search?",
-        topic="Parametri Grid Search",
-        source_hint="data/notion/ CNR + data/chat_exports/chatgpt/",
-        characteristic="Explicit cross-source synthesis",
-        query_type="aggregation",
-        target_sources="data/notion/ CNR + data/chat_exports/chatgpt/",
-    ),
-]
+def parse_golden_set_block(text: str) -> list[GoldenQuery]:
+    match = GOLDEN_SET_FENCE_RE.search(text)
+    if not match:
+        raise ValueError("Could not find a `golden-set` fenced JSON block in CONCEPT_DOC.md")
+
+    block = match.group(1).strip()
+    if block == "[TO BE COMPLETED]":
+        raise ValueError("The `golden-set` block in CONCEPT_DOC.md is not completed")
+
+    try:
+        raw_list = json.loads(block)
+    except json.JSONDecodeError as exc:
+        raise ValueError("Invalid JSON in `golden-set` block of CONCEPT_DOC.md") from exc
+
+    if not isinstance(raw_list, list):
+        raise ValueError("The `golden-set` block must contain a JSON list")
+
+    queries: list[GoldenQuery] = []
+    for item in raw_list:
+        if not isinstance(item, dict):
+            raise ValueError("Each golden-set entry must be a JSON object")
+
+        query = str(item["query"])
+        expected_chunk_ids = item.get("expected_chunk_ids", [])
+        if expected_chunk_ids is None:
+            expected_chunk_ids = []
+        elif not isinstance(expected_chunk_ids, list):
+            raise ValueError("`expected_chunk_ids` must be a list if provided")
+
+        queries.append(
+            GoldenQuery(
+                id=str(item["id"]),
+                topic=str(item["topic"]),
+                query=query,
+                query_it=str(item.get("query_it", query)),
+                query_en=str(item.get("query_en", "")),
+                source_hint=str(item.get("source_hint", "")),
+                characteristic=str(item.get("characteristic", "")),
+                query_type=str(item.get("query_type", "")),
+                target_sources=str(item.get("target_sources", "")),
+                expected_chunk_ids=[str(x) for x in expected_chunk_ids],
+                expected_answer=item.get("expected_answer"),
+            )
+        )
+
+    return queries
 
 
-def load_golden_set() -> list[GoldenQuery]:
-    """Return the static Golden Question set for evaluation."""
-    return GOLDEN_SET
+def load_golden_set(concept_doc_path: str | Path | None = None) -> list[GoldenQuery]:
+    """Return the golden questions by parsing `docs/CONCEPT_DOC.md`."""
+    if concept_doc_path is None:
+        concept_doc_path = DEFAULT_CONCEPT_DOC_PATH
+
+    text = Path(concept_doc_path).read_text(encoding="utf-8")
+    return parse_golden_set_block(text)
+
+
+GOLDEN_SET: list[GoldenQuery] = load_golden_set()

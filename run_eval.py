@@ -15,11 +15,10 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from evaluation.golden_set import GOLDEN_SET, GoldenQuery
+from evaluation.golden_set import GOLDEN_SET, GoldenQuery, load_golden_set
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_GOLDEN_SET_PATH = Path(__file__).resolve().parent / "evaluation" / "golden_set.py"
 DEFAULT_GROUND_TRUTH_PATH = Path(__file__).resolve().parent / "evaluation" / "golden-set-ground-truth.json"
 
 

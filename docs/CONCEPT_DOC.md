@@ -250,7 +250,33 @@ Required fields per entry: `id`, `topic`, `query`.
 Optional: `expected_answer` (null entries fall back to chunk-based judging).
 
 ```golden-set
-[TO BE COMPLETED]
+[
+  {
+    "id": "Q1",
+    "topic": "Spese Tecnologiche",
+    "query": "Quali sono le mie spese tecnologiche fisse annuali per il lavoro?"
+  },
+  {
+    "id": "Q2",
+    "topic": "Gitpod",
+    "query": "In quale corso ho utilizzato Gitpod?"
+  },
+  {
+    "id": "Q3",
+    "topic": "Oxen.ai",
+    "query": "Quanti repositories privati sono inclusi nel piano free di Oxen.ai?"
+  },
+  {
+    "id": "Q4",
+    "topic": "MLOps Tools Comparison",
+    "query": "Quali differenti tools e tecnologie ho usato nel corso MLOps di DTC rispetto a quelle usate in MLOps in 4 Weeks?"
+  },
+  {
+    "id": "Q5",
+    "topic": "Parametri Grid Search",
+    "query": "Quali parametri abbiamo stimato durante il lavoro al CNR usando la grid search?"
+  }
+]
 ```
 
 ---
