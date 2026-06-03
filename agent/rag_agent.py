@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.usage import UsageLimits
 
 from api.schemas import ChatRequest, ChatResponse, ChunkResult
 from config import settings
@@ -53,6 +54,7 @@ agent: Agent[VaultDeps, str] = Agent(
 @agent.tool
 async def search_vault(ctx: RunContext[VaultDeps], query: str) -> str:
     """Cerca nelle note personali di Luca. Restituisce i chunk più rilevanti."""
+    logger.debug("search_vault: start query=%r top_k=%s filters=%s expand=%s", query, ctx.deps.top_k, ctx.deps.filters, ctx.deps.expand)
     top_k = ctx.deps.top_k
     filters = ctx.deps.filters
     expand = ctx.deps.expand
@@ -85,6 +87,7 @@ async def search_vault(ctx: RunContext[VaultDeps], query: str) -> str:
 
     ctx.deps.retrieved_chunks = results
     if not results:
+        logger.debug("search_vault: end (no results)")
         return "Nessun chunk trovato nel vault."
     parts = [
         f"[{r.get('title', '')}] "
@@ -92,16 +95,23 @@ async def search_vault(ctx: RunContext[VaultDeps], query: str) -> str:
         f"{r.get('text', '')[:2500]}"
         for r in results
     ]
+    logger.debug("search_vault: end results=%s", len(results))
     return "\n---\n".join(parts)
 
 
-async def ask(request: ChatRequest) -> ChatResponse:
+async def ask(request: ChatRequest, usage_limits: UsageLimits | None = None) -> ChatResponse:
     deps = VaultDeps(
         top_k=request.top_k,
         filters=request.filters,
         expand=request.expand,
     )
-    result = await agent.run(request.query, deps=deps)
+    logger.warning("ask: start query=%r", request.query)
+    logger.debug("ask: start query=%r", request.query)
+    result = await agent.run(request.query, deps=deps, usage_limits=usage_limits)
+    logger.warning("ask: agent.run completed")
+    logger.debug("ask: agent.run completed")
+    logger.warning("ask: assembling response sources=%s", len(deps.retrieved_chunks))
+    logger.debug("ask: assembling response sources=%s", len(deps.retrieved_chunks))
     sources = [
         ChunkResult(
             title=r.get("title", ""),
