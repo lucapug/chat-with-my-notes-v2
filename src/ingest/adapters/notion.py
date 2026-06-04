@@ -11,6 +11,7 @@ Implements the chunking strategy from CONCEPT_DOC.md §2:
 """
 
 import glob
+import hashlib
 import json
 import logging
 import os
@@ -70,12 +71,84 @@ def _detect_language(metadata: dict, text: str) -> str:
         return "it"
     return "en"
 
+SENTENCE_BOUNDARY_RE = re.compile(
+    r"(?<!es\.)(?<!fig\.)(?<!vs\.)(?<!nr\.)(?<!\bn\.)(?<!pag\.)(?<!cap\.)"
+    r"(?<!art\.)(?<!sec\.)(?<!vol\.)(?<!\bed\.)(?<!ecc\.)(?<!etc\.)"
+    r"(?<!approx\.)(?<!ref\.)"
+    r"(?<=[.!?])\s+(?=[A-ZÀ-Ý0-9])",
+    re.IGNORECASE,
+)
+
+
+def _split_into_sentences(text: str) -> list[str]:
+    """Split text into sentences while avoiding common abbreviations."""
+    sentences = [sentence.strip() for sentence in SENTENCE_BOUNDARY_RE.split(text.strip())]
+    return [sentence for sentence in sentences if sentence]
+
+
+def _stable_chunk_id(filename: str, h3_title: str | None, sub_index: int) -> str:
+    """Generate a deterministic chunk ID stable across re-ingests.
+
+    The ID is based on the source file, H3 heading, and sub-chunk index.
+    """
+    key = f"{filename}|{h3_title or ''}|{sub_index}"
+    return hashlib.sha1(key.encode("utf-8")).hexdigest()
+
+
+def _split_text_with_overlap(text: str, max_tokens: int = 400, overlap: int = 50) -> list[str]:
+    """Split text into smaller chunks using sentence boundaries and token overlap."""
+    tokens = text.split()
+    if len(tokens) <= max_tokens:
+        return [text]
+
+    sentences = _split_into_sentences(text)
+    if not sentences:
+        return [text]
+
+    chunks: list[str] = []
+    current_tokens: list[str] = []
+
+    def flush_current() -> None:
+        if current_tokens:
+            chunks.append(" ".join(current_tokens).strip())
+
+    for sentence in sentences:
+        sentence_tokens = sentence.split()
+        if not sentence_tokens:
+            continue
+
+        if len(current_tokens) + len(sentence_tokens) <= max_tokens:
+            current_tokens.extend(sentence_tokens)
+            continue
+
+        if current_tokens:
+            flush_current()
+            current_tokens = current_tokens[-overlap:] if len(current_tokens) > overlap else current_tokens.copy()
+
+        if len(sentence_tokens) <= max_tokens:
+            current_tokens.extend(sentence_tokens)
+            continue
+
+        start = 0
+        while start < len(sentence_tokens):
+            end = min(start + max_tokens, len(sentence_tokens))
+            chunk_tokens = sentence_tokens[start:end]
+            chunks.append(" ".join(chunk_tokens).strip())
+            if end == len(sentence_tokens):
+                break
+            start = end - overlap
+        current_tokens = []
+
+    flush_current()
+    return chunks
+
 
 def _build_chunk(
     text: str,
     metadata: dict,
     filename: str,
     h3_title: str | None = None,
+    chunk_id: str | None = None,
 ) -> dict:
     """Build a uniform document dict from chunk text and file metadata."""
     if h3_title:
@@ -101,6 +174,7 @@ def _build_chunk(
         tags_str = str(tags_val) if tags_val else ""
 
     return {
+        "chunk_id": chunk_id or _stable_chunk_id(filename, h3_title, 0),
         "title": title,
         "text": text,
         "source": metadata.get("source", "notion"),
@@ -143,7 +217,21 @@ def _chunk_by_h3(body: str, filename: str, metadata: dict) -> list[dict]:
         if i == 0 and preamble:
             section_text = preamble + "\n\n" + section_text
 
-        chunks.append(_build_chunk(section_text, metadata, filename, h3_title=h3_title))
+        sub_chunks = _split_text_with_overlap(section_text)
+        for sub_index, sub_text in enumerate(sub_chunks):
+            # TODO: chunks exceeding 800 tokens may benefit from a PagedIndex /
+            # parent document retrieval approach in a future sprint.
+            # As of Week 5 Day 1, 68 chunks (3.95%) exceed 800 tokens.
+            chunk_id = _stable_chunk_id(filename, h3_title, sub_index)
+            chunks.append(
+                _build_chunk(
+                    sub_text,
+                    metadata,
+                    filename,
+                    h3_title=h3_title,
+                    chunk_id=chunk_id,
+                )
+            )
 
     return chunks
 
