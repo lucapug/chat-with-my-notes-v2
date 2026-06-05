@@ -148,7 +148,7 @@ async def judge_answer(
             {"role": "system", "content": rubric},
             {"role": "user", "content": user_msg},
         ],
-        "max_tokens": 2048,
+        "num_predict": 2048,
         "stream": False,
     }
 
