@@ -28,7 +28,8 @@ EXPECTED_CHUNK_ID_OVERRIDES: dict[str, list[str]] = {
         "export_Notion_Week1KickstartingAnMlProject_24052026.md|Manage project dependencies with `pip` and `venv`|0"
     ],
     "Q4": [
-        "export_Notion_W4WorkflowOrchestrationPrefect_24052026.md|Prefect config and Profiles|1"
+        "export_Notion_W4WorkflowOrchestrationPrefect_24052026.md|Prefect config and Profiles|1",
+        "export_Notion_Week1KickstartingAnMlProject_24052026.md|Move data versioning from Git to DVC|0",
     ],
 }
 

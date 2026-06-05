@@ -59,5 +59,6 @@ def test_load_golden_set_contains_expected_chunk_ids_for_q2_and_q4() -> None:
         "export_Notion_Week1KickstartingAnMlProject_24052026.md|Manage project dependencies with `pip` and `venv`|0"
     ]
     assert q4.expected_chunk_ids == [
-        "export_Notion_W4WorkflowOrchestrationPrefect_24052026.md|Prefect config and Profiles|1"
+        "export_Notion_W4WorkflowOrchestrationPrefect_24052026.md|Prefect config and Profiles|1",
+        "export_Notion_Week1KickstartingAnMlProject_24052026.md|Move data versioning from Git to DVC|0",
     ]
