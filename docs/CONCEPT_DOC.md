@@ -289,7 +289,7 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
 | Q4 | MLOps Tools Comparison | Multi-chunk / multi-file — confronto trasversale su due corsi distinti, expected_chunk_ids da due file separati | Notion | — |
 | Q5 | Parametri Grid Search | Ricerca su esperienza lavorativa pregressa — contesto biografico/professionale | Notion | ChatGPT export |
 
-> Il confronto v1 (Hermes baseline) vs v2 non è direttamente comparabile: v1 usa failure_log.json qualitativo (Week 1-2), v2 usa Search Eval formale con chunk_id stabili a partire da Week 5. La baseline formale parte dai pkl post-fix (2177 chunks).
+>The v1 (Hermes baseline) vs v2 comparison is not directly comparable: v1 uses qualitative failure_log.json (Week 1-2), v2 uses formal Search Eval with stable chunk_id starting from Week 5. The formal baseline starts from the post-fix pkl (2177 chunks).
 
 ---
 
