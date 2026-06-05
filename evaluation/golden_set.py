@@ -21,6 +21,17 @@ from typing import Any
 DEFAULT_CONCEPT_DOC_PATH = Path(__file__).resolve().parent.parent / "docs" / "CONCEPT_DOC.md"
 GOLDEN_SET_FENCE_RE = re.compile(r"^```golden-set\s*\n(.*?)\n```", re.DOTALL | re.MULTILINE)
 
+# TODO Sprint 2: Q1 depends on Gmail source and Q5 depends on ChatGPT export source.
+# Both data sources are empty in Sprint 1, so the golden set mapping must be revisited.
+EXPECTED_CHUNK_ID_OVERRIDES: dict[str, list[str]] = {
+    "Q2": [
+        "export_Notion_Week1KickstartingAnMlProject_24052026.md|Manage project dependencies with `pip` and `venv`|0"
+    ],
+    "Q4": [
+        "export_Notion_W4WorkflowOrchestrationPrefect_24052026.md|Prefect config and Profiles|1"
+    ],
+}
+
 
 @dataclass(frozen=True)
 class GoldenQuery:
@@ -65,6 +76,10 @@ def parse_golden_set_block(text: str) -> list[GoldenQuery]:
             expected_chunk_ids = []
         elif not isinstance(expected_chunk_ids, list):
             raise ValueError("`expected_chunk_ids` must be a list if provided")
+
+        query_id = str(item["id"])
+        if not expected_chunk_ids and query_id in EXPECTED_CHUNK_ID_OVERRIDES:
+            expected_chunk_ids = EXPECTED_CHUNK_ID_OVERRIDES[query_id]
 
         queries.append(
             GoldenQuery(

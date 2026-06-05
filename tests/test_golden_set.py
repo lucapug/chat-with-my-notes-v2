@@ -48,3 +48,16 @@ def test_load_golden_set_from_concept_doc_contains_all_fields() -> None:
         assert isinstance(query.target_sources, str)
         assert isinstance(query.expected_chunk_ids, list)
         assert query.expected_answer is None or isinstance(query.expected_answer, str)
+
+
+def test_load_golden_set_contains_expected_chunk_ids_for_q2_and_q4() -> None:
+    queries = load_golden_set()
+    q2 = next(q for q in queries if q.id == "Q2")
+    q4 = next(q for q in queries if q.id == "Q4")
+
+    assert q2.expected_chunk_ids == [
+        "export_Notion_Week1KickstartingAnMlProject_24052026.md|Manage project dependencies with `pip` and `venv`|0"
+    ]
+    assert q4.expected_chunk_ids == [
+        "export_Notion_W4WorkflowOrchestrationPrefect_24052026.md|Prefect config and Profiles|1"
+    ]
