@@ -279,6 +279,18 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
 ]
 ```
 
+### Golden Questions — Characteristics
+
+| ID | Topic | Characteristics | Target Source Sprint 1 | Target Source Sprint 2 |
+|----|-------|-----------------|------------------------|------------------------|
+| Q1 | Spese Tecnologiche | Ricerca su documento finanziario personale con dati numerici strutturati | Notion | Gmail |
+| Q2 | Gitpod | Deep search in sottopagine — informazione non in pagina top-level Notion | Notion | — |
+| Q3 | Oxen.ai | Named entity univoca con dato numerico specifico — testa precision | Notion | — |
+| Q4 | MLOps Tools Comparison | Multi-chunk / multi-file — confronto trasversale su due corsi distinti, expected_chunk_ids da due file separati | Notion | — |
+| Q5 | Parametri Grid Search | Ricerca su esperienza lavorativa pregressa — contesto biografico/professionale | Notion | ChatGPT export |
+
+> Il confronto v1 (Hermes baseline) vs v2 non è direttamente comparabile: v1 usa failure_log.json qualitativo (Week 1-2), v2 usa Search Eval formale con chunk_id stabili a partire da Week 5. La baseline formale parte dai pkl post-fix (2177 chunks).
+
 ---
 
 ## 8. Key Architectural Decisions
