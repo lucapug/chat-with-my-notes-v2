@@ -1,0 +1,204 @@
+{
+  "run_id": "search_eval_brf_20260606T142105Z",
+  "schema_version": "v1",
+  "date": "2026-06-06T14:21:05.495388Z",
+  "mode": "brf",
+  "top_k": 10,
+  "score_scale": "hit_rate_at_k,mrr",
+  "index_meta": {
+    "vault_index_path": "data/vault_index.pkl",
+    "semantic_index_path": "data/semantic_index.pkl"
+  },
+  "summary": {
+    "brf": {
+      "total_queries": 5,
+      "queries_with_hits": 5,
+      "queries_without_hits": 0,
+      "average_hit_rate": 1.0,
+      "mrr": 0.9
+    }
+  },
+  "results": [
+    {
+      "question": "Q1",
+      "query": "Quali sono le mie spese tecnologiche fisse annuali per il lavoro?",
+      "topic": "Spese Tecnologiche",
+      "expected_chunk_ids": [
+        "76ada2eed43a4afc7a73d2247cd0e84608db75e2"
+      ],
+      "runs": {
+        "brf": {
+          "expected_chunk_ids": [
+            "76ada2eed43a4afc7a73d2247cd0e84608db75e2"
+          ],
+          "retrieved_chunk_ids": [
+            "76ada2eed43a4afc7a73d2247cd0e84608db75e2",
+            "c5cb8067602ebe3c469aa1a297f40669307fca24",
+            "56a3b3a3ead47fe6c39dcec6b346f4c27e190aec",
+            "6dde66e79c739776fa454f29fb6c7a991981a09e",
+            "f47238396170ac0a877baf9b11821be338fa83a6",
+            "5ac0c6a92896007068cffa7b587f7c9dfc2e2719",
+            "5485dc32f41db3fb9608f9299ef5f5bd6b1337bf",
+            "c3186c7888c2ec7ede8058545e4994a76214cffa",
+            "9fb033e44111a150790b0a2430393f0f94e46492",
+            "69041a211b43a7c607cbd78c2807ccc8721e24f5"
+          ],
+          "hit_chunk_ids": [
+            "76ada2eed43a4afc7a73d2247cd0e84608db75e2"
+          ],
+          "hit_rate_at_k": 1,
+          "reciprocal_rank": 1.0,
+          "first_hit_rank": 1,
+          "rag_eval": null
+        }
+      },
+      "rag_eval": null
+    },
+    {
+      "question": "Q2",
+      "query": "Alibi Detect di Seldon serve a data versioning o a data drift analysis?",
+      "topic": "Alibi Detect",
+      "expected_chunk_ids": [
+        "e411cd037e6dee95a6972a30f365fcae94eecbd3"
+      ],
+      "runs": {
+        "brf": {
+          "expected_chunk_ids": [
+            "e411cd037e6dee95a6972a30f365fcae94eecbd3"
+          ],
+          "retrieved_chunk_ids": [
+            "e411cd037e6dee95a6972a30f365fcae94eecbd3",
+            "db991e4d79f9f6b641e6b08521dc0e58a61a98d3",
+            "8dff2a5c8fcc44a04620a0217c912c417dc0d13a",
+            "adb14ab9b6215845fa59f01a06d6e7911cac145a",
+            "d64a5a5a1c134eccd4f4749018b4a67e9ceea051",
+            "30aaf0f391041348951b7fa42785f6ca62b98e27",
+            "a0f2b218bf99b9f1a1fb968556a16cba03a20a39",
+            "b037996b593527960ec196d4a803e26250adf4db",
+            "25ce61488169d79ce9ea26c44bfab1e844960358",
+            "1e8ebf9050ca596a3ba07a089a18585c0d2e2163"
+          ],
+          "hit_chunk_ids": [
+            "e411cd037e6dee95a6972a30f365fcae94eecbd3"
+          ],
+          "hit_rate_at_k": 1,
+          "reciprocal_rank": 1.0,
+          "first_hit_rank": 1,
+          "rag_eval": null
+        }
+      },
+      "rag_eval": null
+    },
+    {
+      "question": "Q3",
+      "query": "Quanti repositories privati sono inclusi nel piano free di Oxen.ai?",
+      "topic": "Oxen.ai",
+      "expected_chunk_ids": [
+        "4d313c5e085aeaab2fd991f0544f862842f99cf3"
+      ],
+      "runs": {
+        "brf": {
+          "expected_chunk_ids": [
+            "4d313c5e085aeaab2fd991f0544f862842f99cf3"
+          ],
+          "retrieved_chunk_ids": [
+            "4d313c5e085aeaab2fd991f0544f862842f99cf3",
+            "dff0cb05454e740977a51132b3063a664e5de186",
+            "a93ec994c9980247641373a510cdb180e5389d8e",
+            "48ffd466b0ed1ca80487b2ae01b2288cc5fd4ac7",
+            "03af39ecb346a0337119c7e85965192b81372640",
+            "be175c3795011595bafc979342612b67d2550791",
+            "d0561751fab764f35fb817fd77267754b02f6569",
+            "636143e9a0fff97db1161ace2c0a0f43009c55d4",
+            "9bf69a93e86cf85361f8a1f76630fd4f0cfdd697",
+            "4a7f7b8af3e4f72d40f669b07a8365d30d4d3e5a"
+          ],
+          "hit_chunk_ids": [
+            "4d313c5e085aeaab2fd991f0544f862842f99cf3"
+          ],
+          "hit_rate_at_k": 1,
+          "reciprocal_rank": 1.0,
+          "first_hit_rank": 1,
+          "rag_eval": null
+        }
+      },
+      "rag_eval": null
+    },
+    {
+      "question": "Q4",
+      "query": "DVC viene usato nel corso MLOps Zoomcamp DTC, nel corso MLOps in 4 Weeks, o in entrambi?",
+      "topic": "MLOps Tools Comparison",
+      "expected_chunk_ids": [
+        "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
+        "db991e4d79f9f6b641e6b08521dc0e58a61a98d3"
+      ],
+      "runs": {
+        "brf": {
+          "expected_chunk_ids": [
+            "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
+            "db991e4d79f9f6b641e6b08521dc0e58a61a98d3"
+          ],
+          "retrieved_chunk_ids": [
+            "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
+            "b81f893c61a0f95b74e796602b3831f9dc8d2a60",
+            "0993673078ccdec4510428afef44073112259034",
+            "c177597da933d7b9eeb6937b40d08a3f06e79354",
+            "4c98b499c9bbb8973b973e57b3c90839dc526ec2",
+            "fafd8154ef2549f0e1a6d39172a3b43fcda686e2",
+            "c690210130e1f3f5a110684abc32eb3aec65b5b8",
+            "6a87f2b1b09b99e786d3d2c7509afedb38d49740",
+            "b156d9ba856a8bdd8c504e9f48e803fe9d7face5",
+            "dff0cb05454e740977a51132b3063a664e5de186"
+          ],
+          "hit_chunk_ids": [
+            "2ded0e693f64be5b54cda41b20a24b50d4f185ba"
+          ],
+          "hit_rate_at_k": 1,
+          "reciprocal_rank": 1.0,
+          "first_hit_rank": 1,
+          "rag_eval": null
+        }
+      },
+      "rag_eval": null
+    },
+    {
+      "question": "Q5",
+      "query": "Quali valori di tau_L e tau_Ab ha prodotto la grid search con Huber Loss su VirusWatch?",
+      "topic": "Parametri Grid Search",
+      "expected_chunk_ids": [
+        "094d931cec9d08e9c78809375365e553eabfa70c",
+        "7fe2bf9a4b3df99362f4acbc28d433242ce0607a"
+      ],
+      "runs": {
+        "brf": {
+          "expected_chunk_ids": [
+            "094d931cec9d08e9c78809375365e553eabfa70c",
+            "7fe2bf9a4b3df99362f4acbc28d433242ce0607a"
+          ],
+          "retrieved_chunk_ids": [
+            "9217084b28a54264c367c271fa7e28392821b821",
+            "094d931cec9d08e9c78809375365e553eabfa70c",
+            "263ab62dc363836e4d844141e72c1aa6b1167018",
+            "dcef56b2b8d9ff795df98055d4da2c7144137a4f",
+            "33d26e7b0919c8105da565c921a268d36e6175ba",
+            "7fe2bf9a4b3df99362f4acbc28d433242ce0607a",
+            "8b89f42b9e99ab239357b89e3ec15ecdc8d4009b",
+            "f73e1a6128f987b10ed40367744c1073eb3d986f",
+            "e9bc71d1834fc85694de387f8ecaf89dde1dec7a",
+            "2835f86057a1c23e9a32907cef75dd20d17c5ea4"
+          ],
+          "hit_chunk_ids": [
+            "094d931cec9d08e9c78809375365e553eabfa70c",
+            "7fe2bf9a4b3df99362f4acbc28d433242ce0607a"
+          ],
+          "hit_rate_at_k": 1,
+          "reciprocal_rank": 0.5,
+          "first_hit_rank": 2,
+          "rag_eval": null
+        }
+      },
+      "rag_eval": null
+    }
+  ],
+  "rag_eval": null
+}

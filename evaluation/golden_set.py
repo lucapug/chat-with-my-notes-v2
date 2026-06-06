@@ -19,19 +19,37 @@ from typing import Any
 
 
 DEFAULT_CONCEPT_DOC_PATH = Path(__file__).resolve().parent.parent / "docs" / "CONCEPT_DOC.md"
+DEFAULT_GOLDEN_TRUTH_PATH = Path(__file__).resolve().parent / "golden-set-ground-truth.json"
 GOLDEN_SET_FENCE_RE = re.compile(r"^```golden-set\s*\n(.*?)\n```", re.DOTALL | re.MULTILINE)
 
-# TODO Sprint 2: Q1 depends on Gmail source and Q5 depends on ChatGPT export source.
-# Both data sources are empty in Sprint 1, so the golden set mapping must be revisited.
-EXPECTED_CHUNK_ID_OVERRIDES: dict[str, list[str]] = {
-    "Q2": [
-        "3feba411fe4cf3c673ba0dd1e14a23d5d0952f4e"
-    ],
-    "Q4": [
-        "51f516af9113a69796ce8e195f5d3a8b363dedf9",
-        "db991e4d79f9f6b641e6b08521dc0e58a61a98d3",
-    ],
-}
+
+def load_expected_chunk_ids(gt_path: str | Path | None = None) -> dict[str, list[str]]:
+    """Load expected chunk ids from the ground truth file.
+
+    This keeps retrieval metadata out of the canonical documentation and
+    inside the evaluation-only ground truth artifact.
+    """
+    if gt_path is None:
+        gt_path = DEFAULT_GOLDEN_TRUTH_PATH
+
+    gt_path = Path(gt_path)
+    with open(gt_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    if not isinstance(data, dict) or "golden_set" not in data:
+        raise ValueError(f"Invalid ground truth format in {gt_path}")
+
+    mapping: dict[str, list[str]] = {}
+    for item in data["golden_set"]:
+        qid = str(item["id"])
+        expected_chunk_ids = item.get("expected_chunk_ids", [])
+        if expected_chunk_ids is None:
+            expected_chunk_ids = []
+        elif not isinstance(expected_chunk_ids, list):
+            raise ValueError("`expected_chunk_ids` in golden-set-ground-truth.json must be a list if provided")
+        mapping[qid] = [str(x) for x in expected_chunk_ids]
+
+    return mapping
 
 
 @dataclass(frozen=True)
@@ -67,24 +85,18 @@ def parse_golden_set_block(text: str) -> list[GoldenQuery]:
         raise ValueError("The `golden-set` block must contain a JSON list")
 
     queries: list[GoldenQuery] = []
+    expected_chunk_id_map = load_expected_chunk_ids()
     for item in raw_list:
         if not isinstance(item, dict):
             raise ValueError("Each golden-set entry must be a JSON object")
 
         query = str(item["query"])
-        expected_chunk_ids = item.get("expected_chunk_ids", [])
-        if expected_chunk_ids is None:
-            expected_chunk_ids = []
-        elif not isinstance(expected_chunk_ids, list):
-            raise ValueError("`expected_chunk_ids` must be a list if provided")
-
         query_id = str(item["id"])
-        if not expected_chunk_ids and query_id in EXPECTED_CHUNK_ID_OVERRIDES:
-            expected_chunk_ids = EXPECTED_CHUNK_ID_OVERRIDES[query_id]
+        expected_chunk_ids = expected_chunk_id_map.get(query_id, [])
 
         queries.append(
             GoldenQuery(
-                id=str(item["id"]),
+                id=query_id,
                 topic=str(item["topic"]),
                 query=query,
                 query_it=str(item.get("query_it", query)),

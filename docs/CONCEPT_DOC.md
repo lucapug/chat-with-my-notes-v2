@@ -258,11 +258,8 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
   },
   {
     "id": "Q2",
-    "topic": "Gitpod",
-    "query": "In quale corso ho utilizzato Gitpod?",
-    "expected_chunk_ids": [
-      "3feba411fe4cf3c673ba0dd1e14a23d5d0952f4e"
-    ]
+    "topic": "Alibi Detect",
+    "query": "Alibi Detect di Seldon serve a data versioning o a data drift analysis?"
   },
   {
     "id": "Q3",
@@ -272,16 +269,12 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
   {
     "id": "Q4",
     "topic": "MLOps Tools Comparison",
-    "query": "Quali differenti tools e tecnologie ho usato nel corso MLOps di DTC rispetto a quelle usate in MLOps in 4 Weeks?",
-    "expected_chunk_ids": [
-      "51f516af9113a69796ce8e195f5d3a8b363dedf9",
-      "db991e4d79f9f6b641e6b08521dc0e58a61a98d3"
-    ]
+    "query": "DVC viene usato nel corso MLOps Zoomcamp DTC, nel corso MLOps in 4 Weeks, o in entrambi?"
   },
   {
     "id": "Q5",
     "topic": "Parametri Grid Search",
-    "query": "Quali parametri abbiamo stimato durante il lavoro al CNR usando la grid search?"
+    "query": "Quali valori di tau_L e tau_Ab ha prodotto la grid search con Huber Loss su VirusWatch?"
   }
 ]
 ```
@@ -297,6 +290,20 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
 | Q5 | Parametri Grid Search | Ricerca su esperienza lavorativa pregressa — contesto biografico/professionale | Notion | ChatGPT export |
 
 >The v1 (Hermes baseline) vs v2 comparison is not directly comparable: v1 uses qualitative failure_log.json (Week 1-2), v2 uses formal Search Eval with stable chunk_id starting from Week 5. The formal baseline starts from the post-fix pkl (2177 chunks).
+
+### 7.2 Search Eval Baseline v2 (@k=10)
+
+| Mode    | Hit Rate | MRR   |
+|---------|----------|-------|
+| BRF     | 1.000    | 0.900 |
+| Semantic| 0.600    | 0.192 |
+| Fusion  | 1.000    | 1.000 |
+
+Notes:
+- Fusion è il motore raccomandato per produzione
+- Semantic è debole da sola su corpus tecnico misto IT/EN
+- Golden set: 5 query con expected_chunk_ids SHA1 verificati dall'indice post-fix chunking Week 5 Day 1
+- chunk_id canonico SHA1 adottato come identificatore unico in tutto il sistema
 
 ---
 

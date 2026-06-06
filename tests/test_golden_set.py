@@ -6,7 +6,7 @@ def test_parse_golden_set_block_preserves_original_fields() -> None:
 ```golden-set
 [
   {
-    "id": "Q1",
+    "id": "QX",
     "topic": "Test",
     "query": "Domanda di test?",
     "expected_answer": "Risposta attesa"
@@ -20,7 +20,7 @@ Some text after
     assert len(queries) == 1
     query = queries[0]
     assert isinstance(query, GoldenQuery)
-    assert query.id == "Q1"
+    assert query.id == "QX"
     assert query.topic == "Test"
     assert query.query == "Domanda di test?"
     assert query.query_it == "Domanda di test?"
@@ -50,15 +50,28 @@ def test_load_golden_set_from_concept_doc_contains_all_fields() -> None:
         assert query.expected_answer is None or isinstance(query.expected_answer, str)
 
 
-def test_load_golden_set_contains_expected_chunk_ids_for_q2_and_q4() -> None:
+def test_load_golden_set_contains_expected_chunk_ids_for_q1_q2_q3_q4_q5() -> None:
     queries = load_golden_set()
+    q1 = next(q for q in queries if q.id == "Q1")
     q2 = next(q for q in queries if q.id == "Q2")
+    q3 = next(q for q in queries if q.id == "Q3")
     q4 = next(q for q in queries if q.id == "Q4")
+    q5 = next(q for q in queries if q.id == "Q5")
 
+    assert q1.expected_chunk_ids == [
+        "76ada2eed43a4afc7a73d2247cd0e84608db75e2",
+    ]
     assert q2.expected_chunk_ids == [
-        "3feba411fe4cf3c673ba0dd1e14a23d5d0952f4e"
+        "e411cd037e6dee95a6972a30f365fcae94eecbd3",
+    ]
+    assert q3.expected_chunk_ids == [
+        "4d313c5e085aeaab2fd991f0544f862842f99cf3",
     ]
     assert q4.expected_chunk_ids == [
-        "51f516af9113a69796ce8e195f5d3a8b363dedf9",
+        "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
         "db991e4d79f9f6b641e6b08521dc0e58a61a98d3",
+    ]
+    assert q5.expected_chunk_ids == [
+        "094d931cec9d08e9c78809375365e553eabfa70c",
+        "7fe2bf9a4b3df99362f4acbc28d433242ce0607a",
     ]

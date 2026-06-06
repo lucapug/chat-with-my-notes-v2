@@ -6,31 +6,48 @@
       "id": "Q1",
       "topic": "Spese Tecnologiche",
       "query": "Quali sono le mie spese tecnologiche fisse annuali per il lavoro?",
+      "expected_chunk_ids": [
+        "76ada2eed43a4afc7a73d2247cd0e84608db75e2"
+      ],
       "expected_answer": "GH Copilot: 100 euro/anno. Z.ai endpoint (piano Lite): 36 euro primo anno, 72 euro a regime. Brave Premium: 130 euro/anno. AI Shipping Labs di Alexey Grigoriev: 500 euro/anno. HuggingFace: prospettiva di abbonarmi, costo non specificato. Oracle Cloud PAYG / Always Free Resources (VM A1 per Hermes Agent): costo non specificato. GLM Coding Lite-Yearly Plan: $96/anno con sconto 50% (oppure $172.80 senza sconto)."
     },
     {
       "id": "Q2",
-      "topic": "Gitpod",
-      "query": "In quale corso ho utilizzato Gitpod?",
-      "expected_answer": "Ho usato Gitpod nel corso MLOps Zoomcamp (DTC / DataTalksClub), nel modulo Week 1 'Kickstarting an ML Project'. Gitpod era un'alternativa a GitHub Codespaces per creare un workspace cloud dal repository forkato. Il workspace era su gitpod.io: lucapug-opensourcemlops-82v0hp6vgr0.ws-eu82. Un'altra alternativa era codespaces in github.com, con l'ambiente definito in .devcontainer/devcontainer.json."
+      "topic": "Alibi Detect",
+      "query": "Alibi Detect di Seldon serve a data versioning o a data drift analysis?",
+      "expected_chunk_ids": [
+        "e411cd037e6dee95a6972a30f365fcae94eecbd3"
+      ],
+      "expected_answer": "Seldon Alibi Detect serve a data drift analysis, non a data versioning. È usato per individuare e monitorare cambiamenti statistici nei dati in input, non per gestire la versione dei file di dati."
     },
     {
       "id": "Q3",
       "topic": "Oxen.ai",
       "query": "Quanti repositories privati sono inclusi nel piano free di Oxen.ai?",
+      "expected_chunk_ids": [
+        "4d313c5e085aeaab2fd991f0544f862842f99cf3"
+      ],
       "expected_answer": "Il piano free di Oxen.ai include: 5 private repositories (inclusi nel piano free), unlimited public repositories, 50GB di storage, 50GB di data transfer (entrambi espandibili). L'informazione si trova nella nota 'Lavorare in Python' nella sezione 'Oxen AI (Data Version control system)', all'interno di un callout di Notion."
     },
     {
       "id": "Q4",
       "topic": "MLOps Tools Comparison",
-      "query": "Quali differenti tools e tecnologie ho usato nel corso MLOps di DTC rispetto a quelle usate in MLOps in 4 Weeks?",
-      "expected_answer": "Corso MLOps di DTC (DataTalksClub, in per_ricerca_lavoro / Corsi DTC): Amazon AWS free tier, EC2 (t3.xlarge, spot instances, AMI, EBS), Amazon Linux OS, Ubuntu 22.04 e 20.04, SSH (.pem), bash CLI, aws ec2, aws_ec2.sh, SSH Tunnel, Visual Studio Code (remote-ssh, openSSH), anaconda-latest / Miniconda, conda (conda-libmamba-solver, libmamba), python 3.10 e 3.9, pandas, jupyter, requirements.txt, pipfile, virtual environment, docker e docker-compose, Docker Desktop, Github, port forwarding, WSL, MLFlow, wandb, Prefect, Flask, Grafana.\n\nCorso MLOps in 4 Weeks (di Alex Kim, in per_ricerca_lavoro / Corsi vari): Gitpod, DVC, aws s3, GitHub Actions, CML, fly.io, Docker, Seldon Alibi detect.\n\nTools in comune: Docker, AWS (EC2 vs s3), GitHub.\n\nTools solo DTC: MLFlow, wandb, Prefect, Flask, Grafana, conda, EC2, SSH Tunnel, VScode remote.\n\nTools solo 4 Weeks: Gitpod, DVC, GitHub Actions, CML, fly.io, Seldon Alibi detect."
+      "query": "DVC viene usato nel corso MLOps Zoomcamp DTC, nel corso MLOps in 4 Weeks, o in entrambi?",
+      "expected_chunk_ids": [
+        "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
+        "db991e4d79f9f6b641e6b08521dc0e58a61a98d3"
+      ],
+      "expected_answer": "DVC viene usato in entrambi i corsi. Nel corso MLOps Zoomcamp DTC viene usato per la data versioning spostando i dati da Git a DVC, mentre nel corso MLOps in 4 Weeks viene usato come parte della pipeline iterativa insieme a CML."
     },
     {
       "id": "Q5",
       "topic": "Parametri Grid Search",
-      "query": "Quali parametri abbiamo stimato durante il lavoro al CNR usando la grid search?",
-      "expected_answer": "I parametri stimati durante il lavoro al CNR usando la grid search erano tau_L e tau_Ab (costanti di tempo del modello biologico per l'analisi delle risposte anticorpali Moderna e Pfizer). Nelle analisi 3-ASC, tau_Ab era fissato a 20 e si faceva grid search solo di tau_L sull'intervallo [65:103] (il CI95% per tau_L calcolato nel caso 2-ASC), individuando il tau_L che minimizzava la Huber Loss pooled nel fit 3-ASC. In altri contesti la grid search cercava il massimo di LogLikelihood su tutti i fit trovando la coppia di tau ottimale. L'informazione si trova nelle note delle riunioni CNR (AppuntiOttobre2025, AppuntiNovembre2025, PerRiunione24Ottobre)."
+      "query": "Quali valori di tau_L e tau_Ab ha prodotto la grid search con Huber Loss su VirusWatch?",
+      "expected_chunk_ids": [
+        "094d931cec9d08e9c78809375365e553eabfa70c",
+        "7fe2bf9a4b3df99362f4acbc28d433242ce0607a"
+      ],
+      "expected_answer": "Su VirusWatch la grid search con Huber Loss ha fissato tau_Ab a 20 e ha prodotto tau_L_hat = 45 come valore ottimale. Il chunk esplicita che tau_Ab restava fisso a 20 mentre la ricerca di tau_L sulla griglia ha minimizzato la Huber Loss pooled."
     }
   ]
 }
