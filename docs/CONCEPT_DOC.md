@@ -259,7 +259,10 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
   {
     "id": "Q2",
     "topic": "Gitpod",
-    "query": "In quale corso ho utilizzato Gitpod?"
+    "query": "In quale corso ho utilizzato Gitpod?",
+    "expected_chunk_ids": [
+      "3feba411fe4cf3c673ba0dd1e14a23d5d0952f4e"
+    ]
   },
   {
     "id": "Q3",
@@ -269,7 +272,11 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
   {
     "id": "Q4",
     "topic": "MLOps Tools Comparison",
-    "query": "Quali differenti tools e tecnologie ho usato nel corso MLOps di DTC rispetto a quelle usate in MLOps in 4 Weeks?"
+    "query": "Quali differenti tools e tecnologie ho usato nel corso MLOps di DTC rispetto a quelle usate in MLOps in 4 Weeks?",
+    "expected_chunk_ids": [
+      "51f516af9113a69796ce8e195f5d3a8b363dedf9",
+      "db991e4d79f9f6b641e6b08521dc0e58a61a98d3"
+    ]
   },
   {
     "id": "Q5",

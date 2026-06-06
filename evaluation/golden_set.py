@@ -25,11 +25,11 @@ GOLDEN_SET_FENCE_RE = re.compile(r"^```golden-set\s*\n(.*?)\n```", re.DOTALL | r
 # Both data sources are empty in Sprint 1, so the golden set mapping must be revisited.
 EXPECTED_CHUNK_ID_OVERRIDES: dict[str, list[str]] = {
     "Q2": [
-        "export_Notion_Week1KickstartingAnMlProject_24052026.md|Manage project dependencies with `pip` and `venv`|0"
+        "3feba411fe4cf3c673ba0dd1e14a23d5d0952f4e"
     ],
     "Q4": [
-        "export_Notion_W4WorkflowOrchestrationPrefect_24052026.md|Prefect config and Profiles|1",
-        "export_Notion_Week1KickstartingAnMlProject_24052026.md|Move data versioning from Git to DVC|0",
+        "51f516af9113a69796ce8e195f5d3a8b363dedf9",
+        "db991e4d79f9f6b641e6b08521dc0e58a61a98d3",
     ],
 }
 

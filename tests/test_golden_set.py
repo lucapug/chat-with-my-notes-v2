@@ -56,9 +56,9 @@ def test_load_golden_set_contains_expected_chunk_ids_for_q2_and_q4() -> None:
     q4 = next(q for q in queries if q.id == "Q4")
 
     assert q2.expected_chunk_ids == [
-        "export_Notion_Week1KickstartingAnMlProject_24052026.md|Manage project dependencies with `pip` and `venv`|0"
+        "3feba411fe4cf3c673ba0dd1e14a23d5d0952f4e"
     ]
     assert q4.expected_chunk_ids == [
-        "export_Notion_W4WorkflowOrchestrationPrefect_24052026.md|Prefect config and Profiles|1",
-        "export_Notion_Week1KickstartingAnMlProject_24052026.md|Move data versioning from Git to DVC|0",
+        "51f516af9113a69796ce8e195f5d3a8b363dedf9",
+        "db991e4d79f9f6b641e6b08521dc0e58a61a98d3",
     ]

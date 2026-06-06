@@ -53,6 +53,24 @@ def load_ground_truth(gt_path: str | Path | None = None) -> dict[str, str | None
     return gt_map
 
 
+def extract_chunk_ids(results: list[dict[str, Any]]) -> set[str]:
+    """Return the canonical chunk_id values present in a list of search result chunks."""
+    chunk_ids: set[str] = set()
+    for chunk in results:
+        chunk_id = chunk.get("chunk_id")
+        if chunk_id:
+            chunk_ids.add(str(chunk_id))
+        else:
+            logger.warning("Search result missing chunk_id, skipping chunk: %s", chunk)
+    return chunk_ids
+
+
+def match_expected_chunk_ids(results: list[dict[str, Any]], expected_chunk_ids: list[str]) -> list[str]:
+    """Return the subset of expected_chunk_ids that appear in the search results by direct chunk_id."""
+    actual_ids = extract_chunk_ids(results)
+    return [chunk_id for chunk_id in expected_chunk_ids if chunk_id in actual_ids]
+
+
 def get_ground_truth_for_query(query_id: str, gt_path: str | Path | None = None) -> str | None:
     ground_truth = load_ground_truth(gt_path)
     return ground_truth.get(query_id)

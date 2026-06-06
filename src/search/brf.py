@@ -67,12 +67,15 @@ def get_index_info() -> dict:
 
 
 def _chunk_id(chunk: dict) -> str:
-    """Stable dedup key: file + title + first 80 chars of text."""
+    """Stable dedup key: canonical chunk_id if present, else legacy fallback."""
+    chunk_id = chunk.get("chunk_id")
+    if chunk_id:
+        return str(chunk_id)
     return f"{chunk.get('file', '')}|{chunk.get('title', '')}|{chunk.get('text', '')[:80]}"
 
 
 def _rrf_fuse_many(result_lists: list[list[dict]], top_k: int, k: int = RRF_K) -> list[dict]:
-    """Reciprocal Rank Fusion over N ranked lists. Deduplicates by chunk_id."""
+    """Reciprocal Rank Fusion over N ranked lists. Deduplicates by canonical chunk_id."""
     scores: dict[str, float] = {}
     chunk_map: dict[str, dict] = {}
     for results in result_lists:

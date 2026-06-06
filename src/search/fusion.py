@@ -4,7 +4,7 @@ Provides a single public function:
   rrf_fuse(brf_results, semantic_results, top_k, k=60) -> list[dict]
 
 Algorithm: RRF score = Σ 1/(k + rank) over each ranked list.
-Deduplication key: file|title|text[:80]  (same contract as brf._rrf_fuse_many).
+Deduplication key: canonical chunk_id field (fallback to file|title|text[:80] for backward compatibility).
 
 Reference implementation: sprint1-hermes-backup vault_search._rrf_fuse_many.
 """
@@ -13,6 +13,10 @@ RRF_K = 60
 
 
 def _chunk_id(chunk: dict) -> str:
+    """Use canonical chunk_id for fusion deduplication, fallback to legacy key."""
+    chunk_id = chunk.get("chunk_id")
+    if chunk_id:
+        return str(chunk_id)
     return f"{chunk.get('file', '')}|{chunk.get('title', '')}|{chunk.get('text', '')[:80]}"
 
 
@@ -26,7 +30,7 @@ def rrf_fuse(
 
     Each list contributes 1/(k + rank) to the score of every chunk it contains.
     Chunks appearing in both lists accumulate scores from both.
-    Deduplication is by (file, title, text[:80]).
+    Deduplication is by canonical chunk_id when available.
 
     Args:
         brf_results:      Ranked list from brf.search() — flat chunk dicts.
