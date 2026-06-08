@@ -160,7 +160,7 @@ async def _translate_query(query_it: str) -> str | None:
             result = content if content else reasoning
             return result if result else None
     except Exception as e:
-        logger.warning("BRF _translate_query failed: %s", e)
+        logger.warning(f"BRF _translate_query failed: {e}")
         return None
 
 
