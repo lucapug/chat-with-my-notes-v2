@@ -34,7 +34,7 @@
   `result.data` → `result.output`
 - Commit: `b51967e`
 
-### Sprint 1 — Week 4 (May 28 to June 8, 2026): recent progress
+### Sprint 1 — Week 5 (May 28 to June 8, 2026): recent progress
 - 28 May: scaffolded Phase 3 v2 architecture with pydantic-ai + FastAPI
 - 29 May: fixed `pyproject.toml` for `uv sync` and added CLI support to orchestrator
 - 30 May: added incremental index append support via `AppendableIndex` and `VectorSearch.append_batch`
