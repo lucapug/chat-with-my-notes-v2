@@ -1,0 +1,497 @@
+{
+  "run_id": "search_eval_rag_eval_20260607T202353Z",
+  "schema_version": "v1",
+  "date": "2026-06-07T20:23:53.133495Z",
+  "mode": "rag_eval",
+  "top_k": 5,
+  "score_scale": "hit_rate_at_k,mrr",
+  "index_meta": {
+    "vault_index_path": "data/vault_index.pkl",
+    "semantic_index_path": "data/semantic_index.pkl"
+  },
+  "summary": {
+    "rag_eval": {
+      "total_queries": 5
+    }
+  },
+  "results": [
+    {
+      "question": "Q1",
+      "query": "Quali sono le mie spese tecnologiche fisse annuali per il lavoro?",
+      "topic": "Spese Tecnologiche",
+      "expected_chunk_ids": [
+        "76ada2eed43a4afc7a73d2247cd0e84608db75e2"
+      ],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "76ada2eed43a4afc7a73d2247cd0e84608db75e2",
+          "title": "Quadro spese fisse strumenti di lavoro",
+          "text": "### Quadro spese fisse strumenti di lavoro **Assistenza al Coding** GH Copilot 100/anno [Z.ai](http://z.ai/) endpoint (piano Lite) 36 al primo anno, 72 a regime Prospettiva di abbonarmi a HuggingFace **AI internet use ** Brave premium 130 euro/anno (sostituto di Comet+Perplexity e di ChatGPT che usavo in forma gratuita e limitata) Comunità di sviluppatori e assistenza attiva al mio lavoro Registrato alla comunità AI Shipping Labs di Alexey Grigoriev dal 1 maggio 2026 (abbonamento annuale 500 euro/anno) se voglio interrompere rinnovo automatico o fare downgrade devo farlo da Stripe prossimo rinnovo : 1 maggio 2027 > Can I cancel or change my subscription? Yes, you're in full control. You can cancel, upgrade, downgrade, or update your payment method at any time through the Stripe Customer Portal. If you cancel, you'll retain access until the end of your current billing period. MIA NOTA: trovo in gmail la e-mail ricevuta di pagamento dove c’è link a gestione Abbonamento che mi porta a Stripe Customer Portal. Basta questo per accedere, pensavo di dovere avere un account di Stripe e lo ho anche fatto e non me lo hanno fatto cancellare, ma non serve. l’account è per chi fa il venditore non per il compratore (customer) Per Agente con memoria (evoluzione di OpenClaw) Hermes Agent Il 21 aprile 2026 mi sono registrato (free tier) a Oracle Cloud con alcuni servizi che posso provare in free trial per 30 giorni e un pacchetto di servizi che sono Always free Resources. In questo pacchetto c’è una macchina virtuale base (A1) che mi serve per avere memoria persistente di Hermes Agent. Come si legge in pagina di approfondimento qui sotto, ho fatto upgrade a piano Pay As You Go (PAIG) per necessità perché non riuscivo a creare una VM in Oracle Cloud.. Dettagli sul mio piano Code Lite annuale con Z AI > 💡 Tu: da questa pagina che conseguenze ho per la mia sottoscrizione: > GLM Coding Lite-Yearly Plan check Valid Valid to 2026.10.04 > > Leo AI: Ottima domanda.",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_PianoLavoroESpesePerStrumenti_24052026.md",
+          "language": "mixed",
+          "created": "2026-03-16",
+          "last_edited": "2026-05-08",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "421ade4c6cc3c3c501ac71231d5418bcb18ffd8d",
+          "title": "Ricerca di lavoro",
+          "text": "### Ricerca di lavoro\n\nPartecipazione a Selezione di EBRIS per Data Scientist (scadenza presentazione CV il 30 aprile 2026)\n\n[https://www.ebris.eu/bando-per-ricerca-data-scientist-2/](https://www.ebris.eu/bando-per-ricerca-data-scientist-2/)\n\nAggiornamento del CV e recupero delle pubblicazioni\n\nPreparazione a colloquio: avanzamento in preparazione certificazioni e ripasso del lavoro svolto in MATLAB nei due articoli al CNR (ma anche di articolo su Telerilevamento ambientale a Paestum con uso di Idrisi e di SOM)",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_PianoLavoroESpesePerStrumenti_24052026.md",
+          "language": "mixed",
+          "created": "2026-03-16",
+          "last_edited": "2026-05-08",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "c5cb8067602ebe3c469aa1a297f40669307fca24",
+          "title": "Quadro spese fisse strumenti di lavoro",
+          "text": "necessità perché non riuscivo a creare una VM in Oracle Cloud.. Dettagli sul mio piano Code Lite annuale con Z AI > 💡 Tu: da questa pagina che conseguenze ho per la mia sottoscrizione: > GLM Coding Lite-Yearly Plan check Valid Valid to 2026.10.04 > > Leo AI: Ottima domanda. Analizziamo la tua situazione specifica. > > **Dati chiave della tua sottoscrizione:** > > - Piano: **Legacy Lite annuale** > - Valido fino al: **4 Ottobre 2026** > - Pagamento: annuale (non a consumo) > --- > > Cosa succede a te, step by step > > | Evento | Data | Dettaglio | > | --- | --- | --- | > | Auto-renew cancellato | 30 Aprile 2026 | Già avvenuto automaticamente | > | Piano attuale attivo | fino al **4 Ottobre 2026** | Nessuna interruzione del servizio | > | 2 mesi gratuiti Lite | dal **4 Ottobre 2026** | Aggiunti automaticamente, durata fino a ~**4 Dicembre 2026** | > | Finestra sconto 50% | dal 30 Apr 2026 al **4 Gennaio 2027** | 3 mesi dopo la fine del piano attuale | > > --- > > In pratica > > - **Fino a Ottobre 2026**: tutto invariato, usi GLM-5.1 normalmente come fallback di Hermes. > - **Ottobre → Dicembre 2026**: 2 mesi gratuiti di Lite online (stessa tier), attivati senza fare nulla. > - **Entro Gennaio 2027**: se vuoi rinnovare, hai diritto al **50% sul prezzo scontato** del piano Lite. Basandosi sui prezzi attuali: > - Annuale: **$96** invece di $172.80 > - Trimestrale: **$24.30** invece di $48.60 > - Mensile: **$9** invece di $18 > --- > > ### Differenza piano Legacy vs. nuovo piano online > > Il punto critico è che il **legacy plan non aveva limiti di utilizzo settimanali**, mentre i nuovi piani *online* li introducono. Considera questo aspetto prima di rinnovare, specialmente se Hermes usa GLM-5.1 come fallback frequente. > > **Azione consigliata**: nessuna urgenza, hai copertura garantita fino a Dicembre 2026. Valuta il rinnovo entro Gennaio 2027 per sfruttare lo sconto del 50%. >",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_PianoLavoroESpesePerStrumenti_24052026.md",
+          "language": "mixed",
+          "created": "2026-03-16",
+          "last_edited": "2026-05-08",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "56a3b3a3ead47fe6c39dcec6b346f4c27e190aec",
+          "title": "mie note generali",
+          "text": "## Interpretability, Explainability, Monitoring. Observability in MLOps\n\n**interpretability**: spiegare le motivazioni generalmente comprensibili che rendono il modello semplificato della realtà idoneo a rispondere al problema\n\n**explainability**: riasalire a ritroso alle motivazioni che hanno prodotto certi risultati del modello\n\n**monitoring**: seguire l’andamento di determinati parametri del modello in produzione\n\n**observability**: individuare nel modello in produzione caratteristiche \n\napprofondimenti: [Understanding Monitoring, Observability and Explainability in AI/ML and Why They're Three Different Things - AI Infrastructure Alliance (ai-infrastructure.org)](https://ai-infrastructure.org/understanding-monitoring-observability-and-explainability-in-ai-ml-and-why-theyre-three-different-things/)",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_MieNoteGenerali_24052026.md",
+          "language": "mixed",
+          "created": "2023-05-22",
+          "last_edited": "2023-06-16",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "42123164e592427db9cfd06beaeff39f2751a776",
+          "title": "Strumenti per la routine di lavoro",
+          "text": "### Strumenti per la routine di lavoro\n\nAffinamento dinamico, con accumulo esperienza. \n\nDopo due settimane questa la mia routine di lavoro:\n\nLeo AI (premium subscription) chatbot per brainstorming (modello LLM automatico, o selezionabile, funziona anche BYOM ma mi sembra che non parta Brave Search)\n\nNotebookLM per brainstorming con memoria fonti. Utile per resoconti settimanali e per cronoprogrammi giornalieri\n\nHermes agent per chat with my notes (runtime cognitivo) usando profilo Personal. Come assistente al coding (Profilo Coder). Inferenza locale (da migliorare per tasks complessi) e endpoint ZAI per fallback ma anche per model switch",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_MembershipDiAiShippingLabs_24052026.md",
+          "language": "mixed",
+          "created": "2026-03-11",
+          "last_edited": "2026-05-22",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        }
+      ],
+      "rag_eval": {
+        "query": "Quali sono le mie spese tecnologiche fisse annuali per il lavoro?",
+        "generated_answer": "Le tue spese tecnologiche fisse annuali per il lavoro sono:\n\n*   **GH Copilot:** 100/anno\n*   **Z.ai endpoint (piano Lite):** 36 al primo anno, 72 a regime\n*   **Brave premium:** 130 euro/anno\n*   **Abbonamento annuale AI Shipping Labs di Alexey Grigoriev:** 500 euro/anno",
+        "judge_verdict": "fail",
+        "judge_reasoning": "La risposta è accurata per gli elementi che menziona, ma fallisce gravemente nel recuperare la completezza. Ha omesso completamente tre voci importanti fornite nella verità di base (HuggingFace, Oracle Cloud e GLM Coding Lite-Yearly Plan), rendendo il risultato incompleto.",
+        "judge_result": {
+          "accuracy": 4,
+          "completeness": 2,
+          "hallucination": 5,
+          "relevance": 5,
+          "outcome": "fail",
+          "reasoning": "La risposta è accurata per gli elementi che menziona, ma fallisce gravemente nel recuperare la completezza. Ha omesso completamente tre voci importanti fornite nella verità di base (HuggingFace, Oracle Cloud e GLM Coding Lite-Yearly Plan), rendendo il risultato incompleto."
+        }
+      },
+      "timing": {
+        "retrieval_seconds": 29.35405447299854,
+        "generation_seconds": 96.12043898800039,
+        "judge_seconds": 23.00767151299806,
+        "total_seconds": 148.4821667940014
+      }
+    },
+    {
+      "question": "Q2",
+      "query": "Alibi Detect di Seldon serve a data versioning o a data drift analysis?",
+      "topic": "Alibi Detect",
+      "expected_chunk_ids": [
+        "e411cd037e6dee95a6972a30f365fcae94eecbd3"
+      ],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "e411cd037e6dee95a6972a30f365fcae94eecbd3",
+          "title": "Introduction to Data Drift Monitoring",
+          "text": "<!-- unknown block type: table_of_contents -->\n\n## 🖼️ Slides\n\n[https://docs.google.com/presentation/d/1mb2uBHj8fg3YL37Fa2aXiRECGonqADpA-jPQpmtA-34/edit?usp=sharing](https://docs.google.com/presentation/d/1mb2uBHj8fg3YL37Fa2aXiRECGonqADpA-jPQpmtA-34/edit?usp=sharing)\n\n## Learning Objectives\n\n- Distinguish between application monitoring and ML monitoring\n- Use Alibi Detect framework to detect data drift\n## Steps\n\n### Introduction to Data Drift Monitoring\n\n- What’s data drift and why do we need to monitor for it?\n- Intro to Alibi Detect (an open source package from Seldon)\n- Add `Churn_Modelling_Germany.csv` to `data/more_data/`\n<!-- unknown block type: file -->\n\n- Add `/more_data` entry to `data/.gitignore`\n- Create, explore and execute `notebooks/DriftDetection.ipynb` \n<!-- unknown block type: file -->\n\n- NOTE: error due to version incompatibility btw numba (invoked by alibi_detect) and numpy when executing the notebook. I had to `poetry add numba==0.56.4`, then `poetry update` (all other packages)\n- from: [https://docs.seldon.io/projects/alibi-detect/en/stable/cd/background.html#detecting-drift](https://docs.seldon.io/projects/alibi-detect/en/stable/cd/background.html#detecting-drift)\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6d6d3e6-e7d5-431c-9df5-c313868cd5cc/08868ee8-17fd-44bb-a4e9-f8fb3a57fa05/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB4664TSSPTPJ%2F20260524%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260524T130650Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJGMEQCIAnPcO4Zc4P5QO38giMHCbLEZ8o6ALyEPzhXMD2txmdnAiBa00I06473xDgbDVT%2BAUrdVjq2DAKiyjzjj6mZBFqjxir%2FAwhJEAAaDDYzNzQyMzE4MzgwNSIMwadMaM5EG6kAx5WiKtwDX6BJ5XLSCbq9eaz6QJJ41VlkTPjjZrOuvsbMzbQNm%2BEOh6X05cYB5OHYot334gWxJJtyLL8V7TIScPUmSeQ9OaVkq%2BoHC5N%2B2yhVzBvWIg3mbtrL5NHDGB62%2Fph3pZEY9SWWAE6u%2BkmBg8UCAvLzi20dvMl3Y70qB3%2F24ohIvvuxeo2Scd3W9ZTK53I0LHl3zexC0PAiSApKz0%2F4%2FTeRGeuzHk5maPkMKAC3tRq4myONiVryy3cO7xe1%2Bbrkl87R95jPypvNephm2OKNfYk9JQ1g%2B5DYY51IMx4dVzaXJuYJ7FS0mQRhEMeufusM1rhISd3RI1jiakidTf7QSX4EqYG7ngr4fKnyMgO9c6PDVYDWtHifk5Mp7mv%2F0XOG%2BUycc9IPXmWaF0lUFCZlee1XGGpp1wj%2BkhisXnTyvwfsDO9l2ZEtACOy%2Fpvv6SderP1w0bzmw9zdTOxyAnFQguZnm2N3mvg8tyfNhcB3sCDPkFEkM4LsZ6%2FxJeKpyyNYAvNAy4C8J4brHbhD67h%2BrGdrDBPmRFiHDXFtkZ4TXKyI%2BsorbKtyTn12aY3W%2FW%2B0iqtnvvz3IA%2B1UuC3UGqo%2BK37nwU61yG%2B9QAgU0yC5OzLCJoo1ag7CcjgAHEuaOsw3%2BnK0AY6pgGX2%2BTwfbp73KGQyTInr6BuJMbqgdBZUcY9I%2Bmvmwu4OQKCu12kmkmn05b4t1JftYKo%2FNl2dCDhrz5cnOvwJBoqv%2B4tekFmj3yWqnVX38TxXBgDVQFzwN3G4eI%2BTTXlqqynG5MLKxOuxvBowVn2IVM2m0%2FtTgSD0EVzJoHiRmRViQm8XHBo%2BAKXTLcPLfI37o0PkgUBqwlvnYr4CZbnIOhJaaMuR3Si&X-Amz-Signature=969d5c79922069b0b338c5eecf7b1dfe2ad9bd677ddaf78c9cf08834c4d0214f&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject)\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6d6d3e6-e7d5-431c-9df5-c313868cd5cc/b3515b4d-555d-4bb5-bc2b-4ca5ecb5a184/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB4664TSSPTPJ%2F20260524%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260524T130650Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJGMEQCIAnPcO4Zc4P5QO38giMHCbLEZ8o6ALyEPzhXMD2txmdnAiBa00I06473xDgbDVT%2BAUrdVjq2DAKiyjzjj6mZBFqjxir%2FAwhJEAAaDDYzNzQyMzE4MzgwNSIMwadMaM5EG6kAx5WiKtwDX6BJ5XLSCbq9eaz6QJJ41VlkTPjjZrOuvsbMzbQNm%2BEOh6X05cYB5OHYot334gWxJJtyLL8V7TIScPUmSeQ9OaVkq%2BoHC5N%2B2yhVzBvWIg3mbtrL5NHDGB62%2Fph3pZEY9SWWAE6u%2BkmBg8UCAvLzi20dvMl3Y70qB3%2F24ohIvvuxeo2Scd3W9ZTK53I0LHl3zexC0PAiSApKz0%2F4%2FTeRGeuzHk5maPkMKAC3tRq4myONiVryy3cO7xe1%2Bbrkl87R95jPypvNephm2OKNfYk9JQ1g%2B5DYY51IMx4dVzaXJuYJ7FS0mQRhEMeufusM1rhISd3RI1jiakidTf7QSX4EqYG7ngr4fKnyMgO9c6PDVYDWtHifk5Mp7mv%2F0XOG%2BUycc9IPXmWaF0lUFCZlee1XGGpp1wj%2BkhisXnTyvwfsDO9l2ZEtACOy%2Fpvv6SderP1w0bzmw9zdTOxyAnFQguZnm2N3mvg8tyfNhcB3sCDPkFEkM4LsZ6%2FxJeKpyyNYAvNAy4C8J4brHbhD67h%2BrGdrDBPmRFiHDXFtkZ4TXKyI%2BsorbKtyTn12aY3W%2FW%2B0iqtnvvz3IA%2B1UuC3UGqo%2BK37nwU61yG%2B9QAgU0yC5OzLCJoo1ag7CcjgAHEuaOsw3%2BnK0AY6pgGX2%2BTwfbp73KGQyTInr6BuJMbqgdBZUcY9I%2Bmvmwu4OQKCu12kmkmn05b4t1JftYKo%2FNl2dCDhrz5cnOvwJBoqv%2B4tekFmj3yWqnVX38TxXBgDVQFzwN3G4eI%2BTTXlqqynG5MLKxOuxvBowVn2IVM2m0%2FtTgSD0EVzJoHiRmRViQm8XHBo%2BAKXTLcPLfI37o0PkgUBqwlvnYr4CZbnIOhJaaMuR3Si&X-Amz-Signature=65999e06ad3fb5a7b86965ed5e374cddabc630265e9074cd32997b25af17db8a&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject)\n\nThe significance level for a given hypothesis test is a value for which a p-value less than or equal to is considered statistically significant. Typical values for are 0.1, 0.05, and 0.01. These values correspond to the probability of observing such an extreme value by chance.\n\nthe lower you fix the p-value thresold, the more sensitive the drift detector become to alert for data drift",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_Week4MonitoringForMlProjects_24052026.md",
+          "language": "mixed",
+          "created": "2023-01-30",
+          "last_edited": "2026-05-24",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "8dff2a5c8fcc44a04620a0217c912c417dc0d13a",
+          "title": "Update web app to store data drift metrics",
+          "text": "### Update web app to store data drift metrics",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_Week4MonitoringForMlProjects_24052026.md",
+          "language": "mixed",
+          "created": "2023-01-30",
+          "last_edited": "2026-05-24",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "4281aaf70ff768853ebbeff350a7a927246691cb",
+          "title": "Technical Indicators",
+          "text": "### Technical Indicators\n\nA differenza delle metriche dell’analisi dei fondamentali (Fundamenta analysis) che tentano di prevedere l’andamento di mercato, ancorandolo all’andamento di parametri sullo stato di salute economica dell’azienda, la Analisi tecnica e i suoi indicatori sono previsioni direttamente calcolate sull’andamento in borsa giornaliero.  \n\nSMA x = Simple Moving Avarage x days  (è un esempio di technical indicator, curva direttamente calcolata dall’andamento giornaliero)\n\nBuy/Sell trading strategy on Technical indicators (SMA10/20): \n\n> Buy when green (SMA10) is lower and intersects red (SMA20), sell when green intersects red again from the upper side \n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6d6d3e6-e7d5-431c-9df5-c313868cd5cc/2b1b0fee-2324-4624-9799-4fbbacbeea07/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB4667OH3KNOH%2F20260524%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260524T131755Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJHMEUCIG60dWWlHblOEaIvC%2FYim85zg0hDG05xxoTN73nKs3bfAiEA8BJTDUzKPRIRqhWcUKGQBe7o%2FFchSN2QZ4yOrtbQEtgq%2FwMISRAAGgw2Mzc0MjMxODM4MDUiDFj3v1JAd0kl2F3yrSrcA%2FWo1dMt56wAIkBW8%2FM8aAYB7WUrKcbiM7IeKAB5KQlGST8rzMc7%2FAaVPmg7OyDGV1ek5lNhhAzETDUHWzvTqlh%2BgTkBvJ8iM%2FIaO8dcrjzyDM8sG%2B%2BLO6tdeAXMYKOY7oUbeXPT4F1YZlRJcpoVu6MON9n2LwN0XBXoZrVoSG0BIA3hqPvNEGXz0nb6%2FFyz%2BrORRi6mFKZxi3%2FNQkoRgVH4OZU2OK0BLlVv5%2Ftkc4BT%2FsKRKsEL0iJiHAEKXbKSRHUl9RsgoP29yLk%2Ff%2Fwgg0o8kc1m67cNGj13XX2Rnudls7wPzHBYTYyZcFYxmgx2sA2mJcRn0Dx6KX2%2BKsjKUhT%2F%2BKr6J49Tz3uwz%2BwhkFrXLWIqCIweAOH5Szli%2Bdn0ygpw9hoOsIrXyXthEYHHAfLRuNF105T9Jis6LRg%2BXJYG%2FHaZeCJM%2F7IIFMjlfQnB%2BAh6SVeXpJYjjzNmpWBxHDKInoa00m6P4KTEC3hH9OXNzPxgQE04uu%2FBlger1LPALRvcOdUNNxIzqkWX%2BEWCy4GgkRGrYYVpTMYbZdMH2x7MRjL6gZpmYcjhJQz4zZgqmjO3xL04CAi0iPNw9J4dG2bUTmCPWqsbNo3XBgiLqJ5UrE%2FTknp71OJBCdcdMLTqytAGOqUB3RkMN0Wd0HPgjXVzprgr0laWvQ5vU7Nu6VYMvWPkKUv2oVtrHK1Bzu1kXGB4YLcQ7LCuTJc50vGukTY1C0DvAJMKsbj0Nrgjceudb3YIC486%2F4UU2y2%2FFXrfo905AEjhip1kWZ4QllHtYea81POvXwQ%2BamXrOMcfbXfSCg%2Bq9hv9cP9TJYU7F2MAsuAbJek%2B%2Fe%2FL7RgVPewjNirJTOaMI4V3ehyY&X-Amz-Signature=1850ab7caff7fffc854c7fffbe05d2ade18edeaec191f87262c670d745a84f82&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject)",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_Module2WorkingWithData_24052026.md",
+          "language": "mixed",
+          "created": "2024-04-26",
+          "last_edited": "2024-05-15",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "adb14ab9b6215845fa59f01a06d6e7911cac145a",
+          "title": "IPOs data",
+          "text": "implement?) fundamental indicators (or ratios), only 4 years series available for FREE. as we don’t know all the festivities in different countries the best way to treat next day or next period is by using .shift() or .lag() instead of timestamps 17:49 at this time point the lesson 2 begins.. Summary: - processing data from the web (scraping from a web page source) - daily OLHCV time series from yfinance (our main dataset and source of information); già iniziato raccolta dati per stock market USA in modulo 1 - New time series on Macro (qualcosa già vista in modulo1) - New dataset - EU (dataset USA per stocks già visto in modulo1) - Fundamental ratios - Technical indicators ### IPOs data By using `pandas.read_html()` we get data from web without recognizing the correct dtypes (everything is treated as string, dtype=object) data processing: We manually infer dtypes and cast the correct dtypes, make data cleaning, imputation, features engineering, exploratory data analysis (EDA) We scrape IPOs stock values from the web More recently, much of the IPO buzz has moved to a focus on so-called unicorns—startup companies that have reached private valuations of more than $1 billion. Investors and the media heavily speculate on these companies and their decision to go public via an IPO or stay private.",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_Module2WorkingWithData_24052026.md",
+          "language": "mixed",
+          "created": "2024-04-26",
+          "last_edited": "2024-05-15",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "db991e4d79f9f6b641e6b08521dc0e58a61a98d3",
+          "title": "Move data versioning from Git to DVC",
+          "text": "### Move data versioning from Git to DVC\n\n- Docs: [https://dvc.org/doc/start/data-and-model-versioning](https://dvc.org/doc/start/data-and-model-versioning)\n- Initialize DVC project\n```bash\ndvc init\n```\n\n- next step is to configure a DVC remote, a place where we will store our data (outside of github!). See next steps\n- Create AWS S3 bucket\n- Set AWS credentials: [https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html)\n- Add DVC remote\n```bash\n# https://dvc.org/doc/command-reference/remote/add#amazon-s3\ndvc remote add -d s3_remote s3://<YOUR_BUCKET_PATH>\n\n#s3://<YOUR_BUCKET_PATH> is the URI S3 that you find in the aws dashboard\n#in may case : s3://lucap-dvc-remote/churn-modelling/\n```\n\n- Set AWS credentials\n```bash\n# https://dvc.org/doc/command-reference/remote/modify#amazon-s3\ndvc remote modify --local s3_remote access_key_id 'my_key_id'\ndvc remote modify --local s3_remote secret_access_key 'my_access_key'\n\n#The --local flag is needed to write sensitive user info to a Git-ignored config file \n#(.dvc/config.local) so that no secrets are leaked (see dvc config). This means that \n#each copy of the DVC repository has to re-configure these values.\n\n#if not explicitly set like above, dvc will look for credentials in the .aws/config\n#that was created when installing aws-cli on the laptop \n```\n\n- push changes to git\n- Start versioning `data/raw`  and `models/` directories\n```bash\ndvc add data/raw models/clf-model.joblib\n```\n\nNote: You’ll see an error raised by DVC because an artifact (file or directory) can only be versioning either DVC or git, but not both. `data/raw` and `models/clf-model.joblib` are already versioned with git, so we need to stop tracking them with git first.\n\n```bash\ngit rm -r --cached 'data/raw'\ngit commit -m \"stop tracking data/raw\"\ngit rm -r --cached 'models/clf-model.joblib'\ngit commit -m \"stop tracking models/clf-model.joblib\"\n```\n\n```bash\ndvc add data/raw models/clf-model.joblib\n```\n\n- Review `git status` and push changes to the git server\n```bash\ngit status\ngit add .\ngit status\ngit commit -m 'initiate dvc and start tracking data and models'\ngit push\n```\n\n- Push versioned data to the DVC remote\n```bash\ndvc push\n```",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_Week1KickstartingAnMlProject_24052026.md",
+          "language": "mixed",
+          "created": "2023-01-10",
+          "last_edited": "2026-05-24",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        }
+      ],
+      "rag_eval": {
+        "query": "Alibi Detect di Seldon serve a data versioning o a data drift analysis?",
+        "generated_answer": "Alibi Detect di Seldon serve per la data drift analysis (per rilevare il data drift).",
+        "judge_verdict": "warning",
+        "judge_reasoning": "La risposta è fattualmente corretta e pertinente (Accuracy=5), ma risulta incompleta perché omesso il dettaglio chiave che Alibi Detect monitora i cambiamenti statistici nei dati di input, come specificato nella Ground Truth. Per questo motivo, l'outcome è 'warning'.",
+        "judge_result": {
+          "accuracy": 5,
+          "completeness": 3,
+          "hallucination": 5,
+          "relevance": 5,
+          "outcome": "warning",
+          "reasoning": "La risposta è fattualmente corretta e pertinente (Accuracy=5), ma risulta incompleta perché omesso il dettaglio chiave che Alibi Detect monitora i cambiamenti statistici nei dati di input, come specificato nella Ground Truth. Per questo motivo, l'outcome è 'warning'."
+        }
+      },
+      "timing": {
+        "retrieval_seconds": 8.557429759002844,
+        "generation_seconds": 68.21005284800049,
+        "judge_seconds": 24.373913412000547,
+        "total_seconds": 101.14139758500096
+      }
+    },
+    {
+      "question": "Q3",
+      "query": "Quanti repositories privati sono inclusi nel piano free di Oxen.ai?",
+      "topic": "Oxen.ai",
+      "expected_chunk_ids": [
+        "4d313c5e085aeaab2fd991f0544f862842f99cf3"
+      ],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "4d313c5e085aeaab2fd991f0544f862842f99cf3",
+          "title": "Oxen AI (Data Version control system)",
+          "text": "### Oxen AI (Data Version control system)\n\n[https://docs.oxen.ai/getting-started/intro](https://docs.oxen.ai/getting-started/intro)\n\n[https://docs.oxen.ai/features/performance](https://docs.oxen.ai/features/performance)\n\n[https://docs.oxen.ai/features/notebooks](https://docs.oxen.ai/features/notebooks)\n\n> 💡 **Create your free account**\n> - ✓Unlimited public repositories\n> - ✓Private repositories\n> 5 included on free plan\n>\n> - ✓50gb of storage\n> more available\n>\n> - ✓50gb of data transfer\n> more available\n>\n[https://www.oxen.ai/register](https://www.oxen.ai/register)",
+          "source": "notion",
+          "category": "CNR",
+          "subcategory": "",
+          "type": "diario",
+          "file": "export_Notion_LavorareInPython_24052026.md",
+          "language": "mixed",
+          "created": "2024-10-27",
+          "last_edited": "2026-05-01",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "CNR_2024_2026",
+          "tags": "[\"notion:CNR\"]"
+        },
+        {
+          "chunk_id": "56c3abbd0e7d41648d8d10a6251bbe11f780ea01",
+          "title": "Riordinare files nel repository",
+          "text": "### Riordinare files nel repository\n\nnell’ottica di riordinare il repository, la priorità è separare files di Tomic da esperimenti su VirusWatch. Potrei inziare con la raccolta di quelli di VirusWatch in una cartella (come fatto per krammer/Paris). Tutto quello che resta in root (cartella Luca) dovrebbe essere per Tomic (compreso i dati) → OK ora c’è la nuova cartella `VirusWatch_rosa_e_blu` con files e dati",
+          "source": "notion",
+          "category": "CNR",
+          "subcategory": "",
+          "type": "diario",
+          "file": "export_Notion_AppuntiDopoNatale2025RipresaTomic_24052026.md",
+          "language": "mixed",
+          "created": "2026-01-08",
+          "last_edited": "2026-03-04",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "CNR_2024_2026",
+          "tags": "[\"notion:CNR\"]"
+        },
+        {
+          "chunk_id": "a93ec994c9980247641373a510cdb180e5389d8e",
+          "title": "Piano di integrazione del LLM nel progetto",
+          "text": "instructions to implement two new features. > > 1. Integration of github fetcher functionality > 1. Integration of LLM functionalities. > For the latter, limit the implementation to Phase 2 (Medium Priority) as stated in llm-integration-plan. > > After implementing the first feature, test new functionalities, then create a commit. Then you can pass to the second feature (LLM integration) with the same testing phase and creation of dedicated commit. > > During the implementation of these feature, follow the rules: > > - “Implement only what is explicitly documented into plans/ dir > - “Do not refactor or anticipate future phases” > - “If a doc references another doc, follow that reference strictly” Dopo avere realizzato la prima nuova feature (gh fetcher con i tests) Roo code è andato in tilt su mia richiesta di realizzare seconda feature (LLM-integration, ma solo a Priority Phase 2). Continuava a volere sviluppare ls sola fase 2 (che non ha senso senza la fase 1 implementata). Per questo ho fatto fare il lavoro (seguendo il piano fatto da Roo Code) a GH Copilot. Risultato",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_SecondoProgetto_24052026.md",
+          "language": "mixed",
+          "created": "2026-01-17",
+          "last_edited": "2026-03-22",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "189bd49e90fc1fc4c6bf5479c9548bbcc7f60e93",
+          "title": "Skills, servizi MCP, liste awesome su github e altro. Punto della situazione febbraio 2026",
+          "text": "### Skills, servizi MCP, liste awesome su github e altro.",
+          "source": "notion",
+          "category": "CNR",
+          "subcategory": "",
+          "type": "diario",
+          "file": "export_Notion_LavorareInPython_24052026.md",
+          "language": "mixed",
+          "created": "2024-10-27",
+          "last_edited": "2026-05-01",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "CNR_2024_2026",
+          "tags": "[\"notion:CNR\"]"
+        },
+        {
+          "chunk_id": "a96deec9cd64a5be2a64c8bc3e7b62d79baf8c3e",
+          "title": "What are the four ML Model Deployment Types ?",
+          "text": "### What are the four ML Model Deployment Types ? \n\n[Embedded: https://www.linkedin.com/embed/feed/update/urn:li:share:7062689869319294977](https://www.linkedin.com/embed/feed/update/urn:li:share:7062689869319294977)",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_MoltoUtiliDalleFaqsEAltro_24052026.md",
+          "language": "mixed",
+          "created": "2023-04-24",
+          "last_edited": "2023-08-02",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        }
+      ],
+      "rag_eval": {
+        "query": "Quanti repositories privati sono inclusi nel piano free di Oxen.ai?",
+        "generated_answer": "Nel piano free di Oxen.ai sono inclusi 5 repository privati.",
+        "judge_verdict": "fail",
+        "judge_reasoning": "Il sistema ha fornito un'informazione fattualmente corretta (accuratezza perfetta e rilevanza massima) che risponde al quesito. Tuttavia, la risposta è estremamente incompleta perché ignora completamente tutti i dettagli contestuali non richiesti ma presenti nella ground truth del vault (ad esempio: repository pubblici illimitati, storage/data transfer, ecc.). Il fallimento di retrieval si manifesta sulla mancanza di copertura dei dettagli.",
+        "judge_result": {
+          "accuracy": 5,
+          "completeness": 1,
+          "hallucination": 5,
+          "relevance": 5,
+          "outcome": "fail",
+          "reasoning": "Il sistema ha fornito un'informazione fattualmente corretta (accuratezza perfetta e rilevanza massima) che risponde al quesito. Tuttavia, la risposta è estremamente incompleta perché ignora completamente tutti i dettagli contestuali non richiesti ma presenti nella ground truth del vault (ad esempio: repository pubblici illimitati, storage/data transfer, ecc.). Il fallimento di retrieval si manifesta sulla mancanza di copertura dei dettagli."
+        }
+      },
+      "timing": {
+        "retrieval_seconds": 6.3396942090002995,
+        "generation_seconds": 47.318396192000364,
+        "judge_seconds": 21.58174033999967,
+        "total_seconds": 75.23983158100236
+      }
+    },
+    {
+      "question": "Q4",
+      "query": "DVC viene usato nel corso MLOps Zoomcamp DTC, nel corso MLOps in 4 Weeks, o in entrambi?",
+      "topic": "MLOps Tools Comparison",
+      "expected_chunk_ids": [
+        "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
+        "db991e4d79f9f6b641e6b08521dc0e58a61a98d3"
+      ],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
+          "title": "MLops in 4 week (8 hours) ",
+          "text": "forked from Alex Kim work\n\n\ntools: \n\n- Iterative DVC and CML, \n- Github and Github Actions, \n- Seldon Alibi detect",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_MlopsIn4Week8Hours_24052026.md",
+          "language": "en",
+          "created": "2023-03-22",
+          "last_edited": "2024-06-05",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "938018de55ad3a3f17baf90989123a8ccace99f9",
+          "title": "Piano di Lavoro per Aprile da dopo Pasqua (dal 7 aprile):",
+          "text": "a fine marzo ho terminato il corso GCML della EITCA EU Certification. I corsi della certificazione sono 12 e dato che ho fatto cambio di strategia nello studio (dopo avere capito che contenuti sono datati al 2020)… proiezione: 2 settimane a corso = 22 settimane, quasi mezzo anno per terminarlo (anche se riuscissi a fare 1 settimana a corso → 11 settimane, quasi 3 mesi per completare!)\n\nDa 8 aprile parte Google Get Certified track GAIL (Generative AI Leader), che posso frequentare grazie a lavoro al CNR. Sono 5 settimane \n\nConclusioni da quanto sopra: Ad aprile 2ore/giorno sono dedicate a Certificazione Google GAIL\n\n### Piano di Lavoro per Aprile da dopo Pasqua (dal 7 aprile):\n\n2ore/giorno per certificazione GAIL\n\n6ore/lezioni Fabri, side projects, e rivisitazione curriculum per invio a EBRIS e ripetizione di lavoro fatto a CNR e di miei capstone projects di DataTalksCLUB, che potrebbero essere oggetto di eventuale colloquio a EBRIS.",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_AggiornamentiDelPiano_24052026.md",
+          "language": "it",
+          "created": "2026-03-21",
+          "last_edited": "2026-04-14",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "0993673078ccdec4510428afef44073112259034",
+          "title": "Refactor Jupyter notebook in a DVC pipeline",
+          "text": "### Refactor Jupyter notebook in a DVC pipeline\n\n- Docs: [https://dvc.org/doc/start/data-pipelines](https://dvc.org/doc/start/data-pipelines)\n- to refactor the nb in a dvc pipeline, first step is that all hardcoded values assigned in the notebook must be moved outside of the notebook in a parameters file\n- then we make a script to load parameters when needed in our pipeline (load_params.py) and it is stored with all the other subsequent py scripts in the src dir\n- Create the following files to read parameter values from a file",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_Week2MlPipelinesReproducibilityExperimentation_24052026.md",
+          "language": "mixed",
+          "created": "2023-01-16",
+          "last_edited": "2023-03-22",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "e1c037ff35ac0c200a81dd73a149fb6d1f66eada",
+          "title": "*cenni a applicazione di ARIMA (Auto Regressive Integrated Moving Average)*:",
+          "text": "### *cenni a applicazione di ARIMA (Auto Regressive Integrated Moving Average)*:\n\nla stima corregge effetti di non stazionarietà (crescita nel tempo del valore delle azioni nel nostro caso). Il termine Integrated corrisponde a un’operazione di differencing fra valori adiacenti che ha lo scopo di contrastare una delle componenti di non stazionarietà, la crescita/decrescita indefinita. L’altra componente (stagionalità) non è presente nel nostro caso, altrimenti dovremmo ricorrere a SARIMA)\n\nstimiamo Adj Close di una sola azione e per ARIMA servono esclusivamente valori precedenti di questa Adj Close (non si usano altre features)\n\nmetodo parametrico che richiede di individuare (p,q,r) e \n\na p è legato il numero di lags (valori precedenti) che includiamo nel calcolo della stima\n\nOsservazioni conclusive su applicazione ARIMA\n\nAnche se graficamente la stima si sovrappone bene, andando a zoomare si vedono discostamenti di 1-2% nelle fluttuazioni e per il nostro scopo sono scostamenti significativi.\n\nL’algoritmo per calcolare ARIMA è lento (oltre un’ora su singola azione e per soli 900 punti di test su 30k impiegati). Materialmente, dopo avere calcolato i parameteri sul train-validation splits, dobbiamo rifare il train su ogni nuovo giorno del test set e per ciascun retraining calcolare 5 previsioni (sui cinque giorni precedenti quello attuale) e infine confrontare la predizione a 5 giorni con la nostra variabile target.\n\nLa lentezza è soprattutto nel retrain (lo stesso problema si ha usando modelli con Neural Networks)\n\nARIMA è particolarmente adatto per financial planning (esempio beer sales planning, ho un link in proposito nelle referenze), in generale in quei casi dove non ho molte altre fetures che possano, combinate assieme, aiutare a fare la previsione, ma dispongo solo dello storico della variabile da stimare (i volumi di vendita della birra o, nel nostro caso, l’andamento della azione)",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_Module3ModelingForTimeSeriesData_24052026.md",
+          "language": "mixed",
+          "created": "2024-05-15",
+          "last_edited": "2024-06-01",
+          "has_images": true,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        },
+        {
+          "chunk_id": "c177597da933d7b9eeb6937b40d08a3f06e79354",
+          "title": "`dvc.yaml`",
+          "text": "###  `dvc.yaml`\n\n```yaml\nstages:\n  data_split:\n    cmd: python src/stages/data_split.py --config=params.yaml\n    deps:\n      - src/stages/data_split.py\n      - data/raw\n    params:\n      - base\n      - data_split\n    outs:\n      - data/processed\n  train:\n    cmd: python src/stages/train.py --config=params.yaml\n    deps:\n      - src/stages/train.py\n      - data/processed\n    params:\n      - base\n      - train\n    outs:\n      - models/clf-model.joblib\n  eval:\n    cmd: python src/stages/eval.py --config=params.yaml\n    deps:\n      - src/stages/eval.py\n      - data/processed\n      - models/clf-model.joblib\n    params:\n      - base\n      - data_split\n      - train\n    outs:\n      - reports/feat_imp.csv:\n          cache: false\n    metrics:\n      - metrics.json:\n          cache: false\n    plots:\n      - reports/figures/cm.png:\n          cache: false\n```\n\n- in the above dvc.yaml file the essential entries are the `cmd:` of each stage (identical to the manual commands given above to execute each stage) but it is very useful to list also deps, params and outs because dvc can cache everything and if in future dvc repro executions there are no changes with respect to the cached data, executions are skipped (very useful for efficiency during experimentations)\n- note that deps and params are two type of dependencies. deps is dependency from files and dirs while params are dependencies from params.yaml entries\n- where `cache: false` is written, we want those artifacts to be versioned by git instead of being dvc versioned\n- Run the pipeline\nNote: all outputs defined in the pipeline stages are automatically versioned with DVC.\nSo when executing the pipeline we’ll see an error saying that `ERROR: output 'models/clf-model.joblib' is already specified in stages: ...`\nWe need to allow DVC to start tracking `models/clf-model.joblib` as part of a pipeline, by removing the pre-existent `models/clf-model.joblib.dvc`\n\n```bash\ndvc repro\nrm models/clf-model.joblib.dvc\ndvc repro\n```\n\n- in order to see in the command line the direct acyclic graph of the pipeline: `dvc dag` (ctrl-z to quit)\n- Push resulting files to Git\n```bash\ngit add .\ngit commit -m \"add DVC pipeline\"\n```\n\n- then `dvc push`",
+          "source": "notion",
+          "category": "per_ricerca_lavoro",
+          "subcategory": "",
+          "type": "nota",
+          "file": "export_Notion_Week2MlPipelinesReproducibilityExperimentation_24052026.md",
+          "language": "mixed",
+          "created": "2023-01-16",
+          "last_edited": "2023-03-22",
+          "has_images": false,
+          "has_ai_callouts": false,
+          "context": "",
+          "tags": "[\"notion:per_ricerca_lavoro\"]"
+        }
+      ],
+      "rag_eval": {
+        "query": "DVC viene usato nel corso MLOps Zoomcamp DTC, nel corso MLOps in 4 Weeks, o in entrambi?",
+        "generated_answer": "DVC viene usato nel corso \"MLops in 4 week\" (Chunk 1). Per quanto riguarda il corso \"MLOps Zoomcamp DTC\", il contesto non fornisce informazioni sull'uso di DVC.",
+        "judge_verdict": "fail",
+        "judge_reasoning": "Il sistema ha fallito perché la sua risposta contraddice i fatti forniti dalla ground truth (che afferma l'uso di DVC in entrambi). Inoltre, il contenuto è estremamente incompleto e non copre alcun dettaglio funzionale specifico per nessuno dei due corsi.",
+        "judge_result": {
+          "accuracy": 2,
+          "completeness": 1,
+          "hallucination": 5,
+          "relevance": 4,
+          "outcome": "fail",
+          "reasoning": "Il sistema ha fallito perché la sua risposta contraddice i fatti forniti dalla ground truth (che afferma l'uso di DVC in entrambi). Inoltre, il contenuto è estremamente incompleto e non copre alcun dettaglio funzionale specifico per nessuno dei due corsi."
+        }
+      },
+      "timing": {
+        "retrieval_seconds": 6.758186561000912,
+        "generation_seconds": 96.10472466500141,
+        "judge_seconds": 27.534685233000346,
+        "total_seconds": 130.39759725100157
+      }
+    },
+    {
+      "question": "Q5",
+      "query": "Quali valori di tau_L e tau_Ab ha prodotto la grid search con Huber Loss su VirusWatch?",
+      "topic": "Parametri Grid Search",
+      "expected_chunk_ids": [
+        "094d931cec9d08e9c78809375365e553eabfa70c",
+        "7fe2bf9a4b3df99362f4acbc28d433242ce0607a"
+      ],
+      "retrieved_chunks": [],
+      "rag_eval": {
+        "timed_out": true
+      },
+      "timing": {
+        "total_seconds": 240.0
+      }
+    }
+  ],
+  "rag_eval": null
+}
