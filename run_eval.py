@@ -12,14 +12,13 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import httpx
 import json
 import logging
 from datetime import date, datetime, timezone
 from pathlib import Path
 from time import perf_counter
 from typing import Any
-
-import httpx
 
 from config import settings
 from evaluation.golden_set import GOLDEN_SET, GoldenQuery
@@ -31,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_GROUND_TRUTH_PATH = Path(__file__).resolve().parent / "evaluation" / "golden-set-ground-truth.json"
 DEFAULT_SEARCH_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "search_eval.json"
-DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v2.json"
+DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v3.json"
 VALID_MODES = {"brf", "semantic", "fusion", "rag_eval", "all"}
 SEARCH_EVAL_SCHEMA_VERSION = "v1"
 QUERY_TIMEOUT_SECONDS = 240
@@ -151,51 +150,6 @@ async def build_rag_context(chunks: list[dict[str, Any]], max_chunks: int = 5) -
     return "\n".join(context_parts)
 
 
-async def _run_single_rag_query(
-    query: GoldenQuery,
-    top_k: int,
-) -> tuple[list[dict[str, Any]], str, dict[str, Any], dict[str, float]]:
-    query_start = perf_counter()
-
-    retrieval_start = perf_counter()
-    retrieved_chunks = await retrieve_results(query, top_k, "fusion")
-    retrieval_seconds = perf_counter() - retrieval_start
-
-    generation_start = perf_counter()
-    context = await build_rag_context(retrieved_chunks, max_chunks=10)
-    try:
-        generated_answer = await generate_answer(query.query, context)
-    except httpx.ReadTimeout:
-        logger.warning(
-            "Q%s generation timed out after %s seconds",
-            query.id,
-            QUERY_TIMEOUT_SECONDS,
-        )
-        generated_answer = "[generation timeout]"
-    generation_seconds = perf_counter() - generation_start
-
-    judge_start = perf_counter()
-    rag_eval = await evaluate_with_judge(query, retrieved_chunks, generated_answer)
-    judge_seconds = perf_counter() - judge_start
-
-    total_seconds = perf_counter() - query_start
-    timing = {
-        "retrieval_seconds": retrieval_seconds,
-        "generation_seconds": generation_seconds,
-        "judge_seconds": judge_seconds,
-        "total_seconds": total_seconds,
-    }
-
-    print(
-        f"Q{query.id}: retrieval={retrieval_seconds:.1f}s "
-        f"generation={generation_seconds:.1f}s "
-        f"judge={judge_seconds:.1f}s "
-        f"total={total_seconds:.1f}s"
-    )
-
-    return retrieved_chunks, generated_answer, rag_eval, timing
-
-
 async def generate_answer(query: str, context: str) -> str:
     payload = {
         "model": settings.ollama_generation_model,
@@ -225,6 +179,51 @@ async def generate_answer(query: str, context: str) -> str:
         data = resp.json()
 
     return str(data["choices"][0]["message"]["content"]).strip()
+
+
+async def _run_single_rag_query(
+    query: GoldenQuery,
+    top_k: int,
+) -> tuple[list[dict[str, Any]], str, dict[str, Any], dict[str, float]]:
+    query_start = perf_counter()
+
+    retrieval_start = perf_counter()
+    retrieved_chunks = await retrieve_results(query, top_k, "fusion")
+    retrieval_seconds = perf_counter() - retrieval_start
+
+    generation_start = perf_counter()
+    context = await build_rag_context(retrieved_chunks, max_chunks=10)
+    try:
+        generated_answer = await generate_answer(query.query, context)
+    except Exception as exc:
+        logger.warning(
+            "Q%s generation failed: %s",
+            query.id,
+            exc,
+        )
+        generated_answer = "[generation failed]"
+    generation_seconds = perf_counter() - generation_start
+
+    judge_start = perf_counter()
+    rag_eval = await evaluate_with_judge(query, retrieved_chunks, generated_answer)
+    judge_seconds = perf_counter() - judge_start
+
+    total_seconds = perf_counter() - query_start
+    timing = {
+        "retrieval_seconds": retrieval_seconds,
+        "generation_seconds": generation_seconds,
+        "judge_seconds": judge_seconds,
+        "total_seconds": total_seconds,
+    }
+
+    print(
+        f"Q{query.id}: retrieval={retrieval_seconds:.1f}s "
+        f"generation={generation_seconds:.1f}s "
+        f"judge={judge_seconds:.1f}s "
+        f"total={total_seconds:.1f}s"
+    )
+
+    return retrieved_chunks, generated_answer, rag_eval, timing
 
 
 async def evaluate_with_judge(
