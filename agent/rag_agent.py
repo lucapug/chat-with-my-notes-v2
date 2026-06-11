@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass, field
 
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.models.openai import OpenAIChatModel, OpenAIModelSettings
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.usage import UsageLimits
 
@@ -42,6 +42,12 @@ _model = OpenAIChatModel(
         base_url=settings.ollama_generation_url,
         api_key="ollama",  # Ollama does not require a real key
     ),
+    settings=OpenAIModelSettings(max_tokens=512),
+)
+
+_generation_agent = Agent(
+    _model,
+    system_prompt=SYSTEM_PROMPT,
 )
 
 agent: Agent[VaultDeps, str] = Agent(
@@ -49,6 +55,20 @@ agent: Agent[VaultDeps, str] = Agent(
     deps_type=VaultDeps,
     system_prompt=SYSTEM_PROMPT,
 )
+
+# NOTE: This production-facing path uses pydantic-ai and Ollama via
+# OpenAIChatModel. There is a known mapping concern between Ollama's
+# `num_predict` setting and OpenAI-style `max_tokens`/`max_completion_tokens`.
+# The batch evaluation path in run_eval.py uses direct httpx calls instead,
+# because eval offline does not need the agent overhead and the mapping issue
+# should be validated separately when integrating with FastAPI.
+async def generate_answer(query: str, context: str, usage_limits: UsageLimits | None = None) -> str:
+    user_prompt = f"Domanda: {query}\n\nContesto:\n{context}"
+    result = await _generation_agent.run(
+        user_prompt,
+        usage_limits=usage_limits,
+    )
+    return str(result.output).strip()
 
 
 @agent.tool
