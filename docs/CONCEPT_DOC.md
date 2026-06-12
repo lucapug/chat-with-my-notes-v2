@@ -110,8 +110,10 @@ chat-with-my-notes-v2/
 ├── main.py                     # FastAPI app entry point
 ├── config.py                   # pydantic-settings Settings class
 ├── pyproject.toml              # Dependencies, build config
+├── pytest.ini                  # pytest configuration
 ├── .env.example                # Config template (no real values)
 ├── .env                        # Runtime config (gitignored)
+├── run_eval.py                 # Evaluation runner (search + RAG eval)
 │
 ├── agent/
 │   └── rag_agent.py            # pydantic-ai Agent, search_vault tool, ask()
@@ -135,6 +137,9 @@ chat-with-my-notes-v2/
 ├── evaluation/
 │   ├── judge.py                # judge_answer() async, extract_judge_scores()
 │   └── golden_set.py           # load_golden_set(), load_ground_truth()
+│
+├── scripts/                    # Utility scripts
+├── tests/                      # pytest test suite
 │
 └── docs/
     └── CONCEPT_DOC.md          # This file
@@ -202,9 +207,12 @@ to minsearch as `filter_dict`. Filterable keyword fields defined in orchestrator
 
 ### Search Evaluation (Retrieval)
 
-**Not yet implemented as automated pipeline in v2.** The sprint1 codebase had
-`test_minsearch_raw.py` and `test_debug_index_raw.py` for manual search quality
-checks. These have not been migrated.
+**`run_eval.py`** — Complete evaluation runner at project root supporting:
+- Search eval modes: `--mode {brf,semantic,fusion,all}` with Hit Rate@k and MRR
+- RAG eval mode: `--mode rag_eval` with full retrieval → generation → judge pipeline
+- Timing breakdown per query (retrieval, generation, judge, total)
+- JSON output with schema version `v1`, run_id timestamps, and per-query details
+- Ground truth loading from `evaluation/golden-set-ground-truth.json`
 
 ### RAG Evaluation (Answer Quality)
 
@@ -230,8 +238,6 @@ Async LLM-as-judge using the Ollama judge model. Two rubrics:
 **Thinking-mode handling**: gemma4:e4b may return empty `content` and put the
 answer in `reasoning`. `extract_judge_scores()` tries content first, then
 reasoning, then regex fallback on individual scores.
-
-**Automated pipeline**: `[TO BE COMPLETED]` — no `run_eval.py` exists in v2 yet.
 
 ---
 
@@ -284,7 +290,7 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
 | ID | Topic | Characteristics | Target Source Sprint 1 | Target Source Sprint 2 |
 |----|-------|-----------------|------------------------|------------------------|
 | Q1 | Spese Tecnologiche | Ricerca su documento finanziario personale con dati numerici strutturati | Notion | Gmail |
-| Q2 | Gitpod | Deep search in sottopagine — informazione non in pagina top-level Notion | Notion | — |
+| Q2 | Alibi Detect | Named entity disambiguation — informazione specifica su strumento ML vs alternativa simile | Notion | — |
 | Q3 | Oxen.ai | Named entity univoca con dato numerico specifico — testa precision | Notion | — |
 | Q4 | MLOps Tools Comparison | Multi-chunk / multi-file — confronto trasversale su due corsi distinti, expected_chunk_ids da due file separati | Notion | — |
 | Q5 | Parametri Grid Search | Ricerca su esperienza lavorativa pregressa — contesto biografico/professionale | Notion | ChatGPT export |
@@ -295,9 +301,9 @@ Optional: `expected_answer` (null entries fall back to chunk-based judging).
 
 | Mode    | Hit Rate | MRR   |
 |---------|----------|-------|
-| BRF     | 1.000    | 0.900 |
+| BRF     | 1.00     | 1.00 |
 | Semantic| 0.600    | 0.192 |
-| Fusion  | 1.000    | 1.000 |
+| Fusion  | 1.00     | 1.00 |
 
 Notes:
 - Fusion è il motore raccomandato per produzione
@@ -450,24 +456,26 @@ Where `file_stem` is the Notion export filename without extension and
 
 Example: `export_Notion_CNR_2026#risultati-gridsearch`
 
-**Current status**: `[TO BE IMPLEMENTED]` — the adapter does not produce
-a `chunk_id` field yet. Required before deletion/update detection can be added.
+**Current status**: Implemented — SHA1-based chunk IDs are used in
+`evaluation/golden-set-ground-truth.json` and `failure_log.json`. The system
+has stable identifiers for retrieval evaluation and tracking, but the proposed
+H3-based format has not been adopted in adapters yet.
 
 ---
 
 ## 11. Open Technical Roadmap
 
-| Priority | Item | Notes |
-|---|---|---|
-| High | Stable `chunk_id` field in adapters | Prerequisite for incremental sync with update/delete |
-| High | `run_eval.py` pipeline in v2 | Migrate from sprint1 `master_run_eval.py`; wire to `judge.py` |
-| High | Populate golden-set in this doc | Add `query` + `expected_answer` for ≥ 10 real vault questions |
-| Medium | Gmail adapter (`adapters/gmail.py`) | Sprint 4 — ingest self-sent emails |
-| Medium | Chat export adapter (`adapters/chat_export.py`) | Sprint 4 — ingest exported chat logs |
-| Medium | Incremental sync endpoint (`POST /sync`) | Use `brf.append_documents()` + `semantic.append_documents()` |
-| Medium | Search evaluation pipeline | Retrieval precision@k over golden questions |
-| Low | Highlighting support | `minsearch.AppendableIndex` supports highlight; expose in API |
-| Low | `search_by_date` tool | Filter chunks by `created` / `last_edited` |
+| Priority | Item | Status | Notes |
+|---|---|---|---|
+| High | Stable `chunk_id` field in adapters | 🔄 Partial | SHA1 IDs in use for eval; H3-based format not yet adopted |
+| High | `run_eval.py` pipeline in v2 | ✅ Complete | Supports search eval, RAG eval, timing breakdown |
+| High | Populate golden-set in this doc | 🔄 In Progress | Current: 5 queries; Target: 50–200 queries |
+| Medium | Gmail adapter (`adapters/gmail.py`) | 📅 Sprint 4 | Ingest self-sent emails |
+| Medium | Chat export adapter (`adapters/chat_export.py`) | 📅 Sprint 4 | Ingest exported chat logs |
+| Medium | Incremental sync endpoint (`POST /sync`) | 📋 Planned | Use `brf.append_documents()` + `semantic.append_documents()` |
+| Medium | Recall@k metric | 📋 Planned | Replace binary hit_rate with `len(hit_chunks) / len(expected_chunks)` |
+| Low | Highlighting support | 📋 Planned | `minsearch.AppendableIndex` supports highlight; expose in API |
+| Low | `search_by_date` tool | 📋 Planned | Filter chunks by `created` / `last_edited` |
 
 ---
 
@@ -481,7 +489,7 @@ All three retrieval strategies were benchmarked against a 5-query golden set
 | Strategy | Hit Rate@10 | MRR | Notes |
 |---|---|---|---|
 | BRF (TF-IDF + RRF) | 1.00 | 1.00 | — |
-| Semantic (nomic-embed-text) | 1.00 | 1.00 | — |
+| Semantic (nomic-embed-text) | 0.600 | 0.192 | Weak on mixed IT/EN tech corpus |
 | Fusion (Semantic + BRF, RRF k=60) | 1.00 | 1.00 | Chosen for RAG Eval |
 
 All three strategies achieve perfect scores on the current golden set.
@@ -498,11 +506,11 @@ Fusion k=10, generator `gemma4-8k:latest`, judge `gemma4:e4b`.
 
 | Query | Topic | Retrieval | Generation | Judge | Total |
 |---|---|---|---|---|---|
-| Q1 | Fixed Tech Expenses | 28.5s | 19.5s | 20.3s | 68.3s |
-| Q2 | Alibi Detect (Seldon) | 8.2s | 18.4s | 24.0s | 50.7s |
-| Q3 | Oxen.ai Free Plan | 8.1s | 18.6s | 22.6s | 49.3s |
-| Q4 | DVC in MLOps Courses | 3.2s | 18.6s | 17.0s | 38.7s |
-| Q5 | Grid Search Parameters | 5.0s | 19.5s | 13.7s | 38.1s |
+| Q1 | Spese Tecnologiche | 28.5s | 19.5s | 20.3s | 68.3s |
+| Q2 | Alibi Detect | 8.2s | 18.4s | 24.0s | 50.7s |
+| Q3 | Oxen.ai | 8.1s | 18.6s | 22.6s | 49.3s |
+| Q4 | MLOps Tools Comparison | 3.2s | 18.6s | 17.0s | 38.7s |
+| Q5 | Parametri Grid Search | 5.0s | 19.5s | 13.7s | 38.1s |
 | **Avg** | | **10.6s** | **18.9s** | **19.5s** | **49.0s** |
 
 5/5 queries completed. No timeouts. Generation time is stable at ~19s across
