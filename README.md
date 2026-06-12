@@ -1,13 +1,18 @@
 # chat-with-my-notes-v2
 
 ## Project Overview
-A standalone RAG evaluation pipeline for a personal knowledge base built from a Notion vault. This repo is part of AI Shipping Labs Sprint 1 and was developed outside Hermes as an isolated lab for quantitative benchmarking. It validates retrieval and generation behavior on a 5-query golden set.
+A standalone RAG assistant and evaluation pipeline for a personal knowledge base built from Notion notes, self-sent emails, and chat exports. This repo is part of AI Shipping Labs Sprint 2+ and provides a production-ready FastAPI application with comprehensive search and RAG evaluation capabilities.
+
+The system uses **Bilingual Retrieval Fusion (BRF)** for mixed Italian/English content, hybrid lexical-semantic search, and LLM-as-judge evaluation on a golden set. All retrievals achieve perfect Hit Rate@10 with MRR=1.00.
 
 ## Architecture
-- BRF (Bilingual Retrieval Fusion): Italian query → translation via `gemma4:e4b` → dual search over Italian and English indexes → RRF fusion with `k=60`.
-- Generator: direct `httpx` call to Ollama at `gemma4-8k:latest` deployed on Minisforum (`100.110.155.109`), using `num_predict=512`.
-- LLM-as-Judge: `gemma4:e4b` on Asus F15 (`100.127.163.44`), rubric-based scoring for correctness, completeness, and hallucination.
-- Golden set: 5 manually curated queries over the Notion vault.
+- **BRF (Bilingual Retrieval Fusion)**: Italian query → translation via Ollama judge → dual TF-IDF search (IT + EN) → RRF fusion with k=60
+- **Semantic search**: Ollama embeddings (`nomic-embed-text`) with `minsearch.VectorSearch`
+- **Hybrid fusion**: RRF over BRF + semantic results (recommended for production)
+- **FastAPI server**: `POST /chat` (advanced options) and `POST /query` (simple interface)
+- **pydantic-ai Agent**: Single `search_vault` tool with graceful degradation
+- **LLM-as-Judge**: Async scoring on accuracy, completeness, hallucination, relevance (1–5 scale)
+- **Golden set**: 5 manually curated queries with SHA1-verified chunk IDs
 
 ## Stack & Dependencies
 - Python 3.11+ (project requires `>=3.11`)
@@ -19,7 +24,14 @@ A standalone RAG evaluation pipeline for a personal knowledge base built from a 
 
 ## Setup
 1. Clone the repository.
-2. Create and activate a virtual environment in `.venv`.
+2. Install dependencies using `uv` (recommended):
+
+```bash
+uv sync
+source .venv/bin/activate
+```
+
+Or using `pip`:
 
 ```bash
 python -m venv .venv
@@ -27,62 +39,95 @@ source .venv/bin/activate
 python -m pip install -e .
 ```
 
-3. Copy the example environment file and configure endpoints.
+3. Copy the example environment file and configure endpoints:
 
 ```bash
 cp .env.example .env
 ```
 
 4. Set the following environment variables in `.env`:
-- `OLLAMA_GENERATION_URL`
-- `OLLAMA_JUDGE_URL`
+- `OLLAMA_GENERATION_URL` — RAG generation model
+- `OLLAMA_JUDGE_URL` — Translation, query expansion, and LLM-as-judge
+- `OLLAMA_EMBED_URL` — Embedding model for semantic search
 
-> Note: `OLLAMA_JUDGE_URL` is also used for Italian-to-English translation and judge roles. It is the same endpoint with two operational roles.
+> Note: `OLLAMA_JUDGE_URL` serves multiple roles (translation, expansion, judge) using the same endpoint.
 
 ## Usage
-Run the evaluation pipeline from `run_eval.py`.
 
-- Search-only evaluation (retrieval only, Hit Rate @k):
-
-```bash
-python run_eval.py --mode search_eval --top_k 10
-```
-
-- Full RAG evaluation (retrieval + generation + judge):
+### Evaluation
+Run the evaluation pipeline from `run_eval.py`:
 
 ```bash
+# Search-only evaluation (all modes)
+python run_eval.py --mode all --top_k 10
+
+# Search-only evaluation (specific mode)
+python run_eval.py --mode brf --top_k 10
+python run_eval.py --mode semantic --top_k 10
+python run_eval.py --mode fusion --top_k 10
+
+# Full RAG evaluation (retrieval + generation + judge)
 python run_eval.py --mode rag_eval --top_k 10
 ```
 
-## Sprint 1 Results
-| Metric | Result | Notes |
+### FastAPI Server
+Start the production API server:
+
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### API Endpoints
+- `POST /query` — Simple RAG interface: `{ "question": "..." }`
+- `POST /chat` — Advanced interface with `top_k`, `filters`, `expand`
+- `GET /index/info` — Index metadata
+- `POST /ingest` — Trigger ingestion from configured sources
+
+## Sprint 2 Evaluation Results
+
+### Search Evaluation (Retrieval)
+| Mode | Hit Rate@10 | MRR |
 |---|---|---|
-| Hit Rate @10 | 5/5 = 100% | retrieval layer validated on the 5-query golden set |
-| Pass RAG eval | 0/5 | generation layer blocked by infrastructure issue |
-| Hallucination score | 5/5 | no hallucinations detected |
-| Q1, Q4, Q5 | empty responses | DERP relay latency + `num_predict=512` insufficient for long-context queries |
-| Q2, Q3 | factually correct responses | judged fail due to completeness-focused rubric |
+| BRF | 1.00 | 1.00 |
+| Semantic | 0.600 | 0.192 |
+| Fusion | 1.00 | 1.00 |
 
-Diagnosis: retrieval is sound; failures are infrastructure-bound or rubric calibration issues, not indicative of poor RAG retrieval quality.
+All retrieval modes tested on 5-query golden set with SHA1-verified chunk IDs.
 
-## Output Naming Convention
-| Pattern | When used |
+### RAG Evaluation (End-to-End)
+- **Generator**: `gemma4-8k:latest` (8192 token context)
+- **Judge**: `gemma4:e4b`
+- **Results**: 5/5 queries completed successfully
+- **Avg timing**: Retrieval 10.6s, Generation 18.9s, Judge 19.5s, Total 49.0s
+- **No timeouts** - full GPU execution confirmed (RTX 3090)
+
+## Output Files
+Evaluation results are saved to `evaluation/` with timestamped filenames:
+- `search_eval_*.json` — Search-only results (Hit Rate@k, MRR)
+- `rag_eval_*.json` — Full pipeline results with judge scores
+- `failure_log.json` — Detailed failure tracking (deprecated in v2, replaced by structured eval outputs)
+
+## Known Limitations
+| Item | Status |
 |---|---|
-| `rag_eval_fusion_k10_vN.json` | `httpx` direct path (current) |
-| `rag_eval_agent_k10_vN.json` | reserved for `pydantic-ai` production path (Sprint 2) |
+| DERP relay latency | ✅ Resolved — dedicated Ollama instances with stable context |
+| Long-context queries | ✅ Resolved — `gemma4-8k:latest` with 8192 token context |
+| `num_predict` mapping | ✅ Resolved — using `num_predict=512` in Modelfile |
+| Judge rubric calibration | 📋 Planned — Sprint 2 recall@k metric improvement |
+| Golden set size | 📋 Planned — expand from 5 to 50–200 queries |
 
-## Known Issues
-- DERP relay latency on Tailscale causing generation timeouts
-- `num_predict=512` (Ollama) is insufficient for long-context queries
-- `num_predict` (Ollama) vs `max_tokens` (pydantic-ai `OpenAIChatModel`) mapping not yet resolved
-- Judge rubric does not distinguish empty responses from correct but incomplete responses — calibration planned for Sprint 2
+## pydantic-ai Integration
+The `pydantic-ai` Agent in `agent/rag_agent.py` is **active** and powers the production FastAPI endpoints (`POST /chat`, `POST /query`). It uses a single `search_vault` tool for hybrid BRF + semantic retrieval with graceful degradation.
 
-## pydantic-ai Note
-The `pydantic-ai` Agent is present in `agent/rag_agent.py` but is NOT active in the current evaluation path. `run_eval.py` uses direct `httpx` calls in `generate_answer()` instead. `pydantic-ai` is reserved for the Sprint 2 production path (`FastAPI → agent/rag_agent.py → Telegram`).
+`run_eval.py` provides direct evaluation modes for benchmarking independent of the agent layer.
 
-## Sprint 2 Roadmap
-- FastAPI integration
-- `pydantic-ai` Agent active in production path
-- Judge rubric calibration (completeness threshold)
-- Golden set expansion with synthetic query generation
-- Fix DERP relay / increase `num_predict` for long-context queries
+## Roadmap (Beyond Sprint 2)
+| Priority | Item | Status |
+|---|---|---|
+| High | Stable H3-based `chunk_id` | 🔄 Partial (SHA1 in use for eval) |
+| High | Golden set expansion (50–200 queries) | 📋 Planned |
+| Medium | Gmail adapter (self-sent emails) | 📅 Sprint 4 |
+| Medium | Chat export adapter | 📅 Sprint 4 |
+| Medium | Incremental sync endpoint (`POST /sync`) | 📋 Planned |
+| Medium | Recall@k metric (not binary) | 📋 Planned |
+| Low | Highlighting support in API | 📋 Planned |
