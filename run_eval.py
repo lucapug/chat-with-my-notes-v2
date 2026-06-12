@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_GROUND_TRUTH_PATH = Path(__file__).resolve().parent / "evaluation" / "golden-set-ground-truth.json"
 DEFAULT_SEARCH_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "search_eval.json"
-DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v3.json"
+DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v4.json"
 VALID_MODES = {"brf", "semantic", "fusion", "rag_eval", "all"}
 SEARCH_EVAL_SCHEMA_VERSION = "v1"
 QUERY_TIMEOUT_SECONDS = 240
