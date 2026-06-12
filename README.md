@@ -1,7 +1,7 @@
 # chat-with-my-notes-v2
 
 ## Project Overview
-A standalone RAG assistant and evaluation pipeline for a personal knowledge base built from Notion notes, self-sent emails, and chat exports. This repo is part of AI Shipping Labs Sprint 2+ and provides a production-ready FastAPI application with comprehensive search and RAG evaluation capabilities.
+A standalone RAG assistant and evaluation pipeline for a personal knowledge base built from Notion notes, self-sent emails, and chat exports. Existing repository work reflects Sprint 1 delivery, while planned enhancements are scoped for Sprint 2. This repo is part of AI Shipping Labs Sprint 2 and provides a production-ready FastAPI application with comprehensive search and RAG evaluation capabilities.
 
 The system uses **Bilingual Retrieval Fusion (BRF)** for mixed Italian/English content, hybrid lexical-semantic search, and LLM-as-judge evaluation on a golden set. All retrievals achieve perfect Hit Rate@10 with MRR=1.00.
 
@@ -24,20 +24,15 @@ The system uses **Bilingual Retrieval Fusion (BRF)** for mixed Italian/English c
 
 ## Setup
 1. Clone the repository.
-2. Install dependencies using `uv` (recommended):
-
-```bash
-uv sync
-source .venv/bin/activate
-```
-
-Or using `pip`:
+2. Create a development environment and install dependencies with pip:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
 ```
+
+Do not use `uv sync` for dependency installation, because `uv.lock` is intentionally not versioned in this repository to keep the project flexible for other users.
 
 3. Copy the example environment file and configure endpoints:
 
@@ -121,13 +116,13 @@ The `pydantic-ai` Agent in `agent/rag_agent.py` is **active** and powers the pro
 
 `run_eval.py` provides direct evaluation modes for benchmarking independent of the agent layer.
 
-## Roadmap (Beyond Sprint 2)
+## Sprint 2 Roadmap
 | Priority | Item | Status |
 |---|---|---|
 | High | Stable H3-based `chunk_id` | 🔄 Partial (SHA1 in use for eval) |
-| High | Golden set expansion (50–200 queries) | 📋 Planned |
-| Medium | Gmail adapter (self-sent emails) | 📅 Sprint 4 |
-| Medium | Chat export adapter | 📅 Sprint 4 |
-| Medium | Incremental sync endpoint (`POST /sync`) | 📋 Planned |
-| Medium | Recall@k metric (not binary) | 📋 Planned |
-| Low | Highlighting support in API | 📋 Planned |
+| High | Golden set expansion (50–200 queries) | 📋 Planned for Sprint 2 |
+| Medium | Gmail adapter (self-sent emails) | 📋 Planned for Sprint 2 |
+| Medium | Chat export adapter | 📋 Planned for Sprint 2 |
+| Medium | Incremental sync endpoint (`POST /sync`) | 📋 Planned for Sprint 2 |
+| Medium | Recall@k metric (not binary) | 📋 Planned for Sprint 2 |
+| Low | Highlighting support in API | 📋 Planned for Sprint 2 |
