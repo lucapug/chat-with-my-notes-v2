@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_GROUND_TRUTH_PATH = Path(__file__).resolve().parent / "evaluation" / "golden-set-ground-truth.json"
 DEFAULT_SEARCH_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "search_eval.json"
-DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v4.json"
+DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v5.json"
 VALID_MODES = {"brf", "semantic", "fusion", "rag_eval", "all"}
 SEARCH_EVAL_SCHEMA_VERSION = "v1"
 QUERY_TIMEOUT_SECONDS = 240
@@ -143,7 +143,9 @@ async def build_rag_context(chunks: list[dict[str, Any]], max_chunks: int = 5) -
         title = chunk.get("title", "")
         file = chunk.get("file", "")
         text = chunk.get("text", "")
-        excerpt = text.strip().replace("\n", " ")[:1200]
+        # Increased from 1200 to 3000 to preserve full content for complex financial/technical documents
+        # Preserve newlines for structure (lists, tables, callouts)
+        excerpt = text.strip()[:3000]
         context_parts.append(
             f"--- CHUNK {i} ---\nTitle: {title}\nFile: {file}\nText: {excerpt}\n"
         )
@@ -158,6 +160,8 @@ async def generate_answer(query: str, context: str) -> str:
                 "role": "system",
                 "content": (
                     "You are a helpful assistant. Answer the user's question using only the provided context. "
+                    "Be EXHAUSTIVE and COMPLETE: list ALL relevant details, numerical values, and specific information present in the context. "
+                    "Do NOT summarize or omit details. If multiple items are listed in the context, list them ALL. "
                     "If the answer is not found, say that the information is not present in the context."
                 ),
             },
@@ -166,7 +170,7 @@ async def generate_answer(query: str, context: str) -> str:
                 "content": f"Domanda: {query}\n\nContesto:\n{context}",
             },
         ],
-        "num_predict": 512,
+        "max_tokens": 2048,
         "stream": False,
     }
 
@@ -178,12 +182,22 @@ async def generate_answer(query: str, context: str) -> str:
         resp.raise_for_status()
         data = resp.json()
 
-    return str(data["choices"][0]["message"]["content"]).strip()
+    choice = data["choices"][0]
+    finish_reason = choice.get("finish_reason", "unknown")
+    content = str(choice["message"]["content"] or "").strip()
+    if not content:
+        logger.warning(
+            "generate_answer: empty content — finish_reason=%s, model=%s",
+            finish_reason,
+            data.get("model", "unknown"),
+        )
+    return content
 
 
 async def _run_single_rag_query(
     query: GoldenQuery,
     top_k: int,
+    ground_truth_map: dict[str, str | None],
 ) -> tuple[list[dict[str, Any]], str, dict[str, Any], dict[str, float]]:
     query_start = perf_counter()
 
@@ -205,7 +219,7 @@ async def _run_single_rag_query(
     generation_seconds = perf_counter() - generation_start
 
     judge_start = perf_counter()
-    rag_eval = await evaluate_with_judge(query, retrieved_chunks, generated_answer)
+    rag_eval = await evaluate_with_judge(query, retrieved_chunks, generated_answer, ground_truth_map)
     judge_seconds = perf_counter() - judge_start
 
     total_seconds = perf_counter() - query_start
@@ -230,8 +244,8 @@ async def evaluate_with_judge(
     query: GoldenQuery,
     chunks: list[dict[str, Any]],
     generated_answer: str,
+    ground_truth_map: dict[str, str | None],
 ) -> dict[str, Any]:
-    ground_truth_map = load_ground_truth()
     ground_truth = ground_truth_map.get(query.id)
     judge_result = await judge_answer(query.query, generated_answer, chunks, ground_truth)
     verdict = judge_result.get("outcome") or judge_result.get("verdict") or "unknown"
@@ -247,12 +261,13 @@ async def evaluate_with_judge(
 
 
 async def run_rag_eval(golden_queries: list[GoldenQuery], top_k: int) -> dict[str, Any]:
+    ground_truth_map = load_ground_truth()
     all_results: list[dict[str, Any]] = []
 
     for query in golden_queries:
         try:
             retrieved_chunks, generated_answer, rag_eval, timing = await asyncio.wait_for(
-                _run_single_rag_query(query, top_k),
+                _run_single_rag_query(query, top_k, ground_truth_map),
                 timeout=QUERY_TIMEOUT_SECONDS,
             )
         except asyncio.TimeoutError:

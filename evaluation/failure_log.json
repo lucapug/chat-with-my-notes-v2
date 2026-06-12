@@ -1,0 +1,113 @@
+{
+  "_description": "Analysis of 4/5 failures in rag_eval_fusion_k10_v5.json (Phase 3 Evaluation)",
+  "_date": "2026-06-12",
+  "_eval_file": "rag_eval_fusion_k10_v5.json",
+  "_fix_applied": true,
+  "_fix_details": "run_eval.py: context truncation 1200→3000 chars, removed text flattening, enhanced system prompt for completeness",
+  
+  "summary": {
+    "total_queries": 5,
+    "passed": 1,
+    "failed": 4,
+    "pass_rate": 0.2
+  },
+
+  "root_causes": [
+    {
+      "pattern": "Generation Completeness",
+      "affected_queries": ["Q1", "Q2", "Q3"],
+      "description": "Retrieval was correct (expected chunk in #1), but generator produced incomplete answers by omitting details present in retrieved chunks.",
+      "causes": [
+        "Context truncated to 1200 characters in build_rag_context() line 146 — cut off ~50% of chunk content for Q1",
+        "Text flattening (replace('\\n', ' ')) destroyed list/table structure",
+        "System prompt too generic — no instruction to be exhaustive or list all details"
+      ],
+      "fixes_applied": [
+        "Increased context excerpt from 1200 to 3000 characters",
+        "Removed replace('\\n', ' ') to preserve text structure",
+        "Enhanced system prompt: 'Be EXHAUSTIVE and COMPLETE: list ALL relevant details, numerical values, and specific information present in the context. Do NOT summarize or omit details.'"
+      ]
+    },
+    {
+      "pattern": "Retrieval Failure",
+      "affected_queries": ["Q4"],
+      "description": "Expected chunk 2ded0e69... was not retrieved in top-10 results. Only 1/2 expected chunks found.",
+      "causes": [
+        "Query requires bridging multiple sources (MLOps Zoomcamp DTC vs MLOps in 4 Weeks)",
+        "Semantic search may not have enough overlap with chunk content",
+        "Chunk may not exist in index or embedding quality issue"
+      ],
+      "fixes_needed": [
+        "Verify chunk 2ded0e69... exists in index via search_debug",
+        "Consider query expansion for multi-source comparison queries",
+        "Investigate embedding quality for technical terms (DVC, MLOps course names)"
+      ]
+    }
+  ],
+
+  "per_query_analysis": {
+    "Q1": {
+      "topic": "Spese Tecnologiche",
+      "expected_chunks": ["76ada2e..."],
+      "retrieved_chunks": ["76ada2e... (rank 1)"],
+      "retrieval_status": "CORRECT",
+      "generation_status": "INCOMPLETE (2/5 completeness)",
+      "expected_answer_excerpts": ["GH Copilot: 100 euro/anno", "Z.ai: 36/72 euro", "Brave Premium: 130 euro/anno", "AI Shipping Labs: 500 euro", "HuggingFace: prospettiva abbonamento", "Oracle Cloud PAYG", "GLM Coding Lite: $96/anno"],
+      "generated_answer_omitted": ["HuggingFace", "Oracle Cloud", "GLM Coding Lite"],
+      "root_cause": "Context truncated at 1200 chars cut off bottom half of financial list",
+      "fix_status": "APPLIED (context 3000 chars should preserve full list)"
+    },
+    "Q2": {
+      "topic": "Alibi Detect",
+      "expected_chunks": ["e411cd0..."],
+      "retrieved_chunks": ["e411cd0... (rank 1)"],
+      "retrieval_status": "CORRECT",
+      "generation_status": "TOO BRIEF (1/5 completeness)",
+      "expected_answer_details": ["Alibi Detect = data drift analysis", "NOT data versioning", "monitoraggio statistico", "valutazione previsione vs ground truth"],
+      "generated_answer_provided": ["Correct answer but minimal (1 sentence)"],
+      "root_cause": "Weak system prompt — no instruction to provide exhaustive context",
+      "fix_status": "APPLIED (enhanced system prompt for completeness)"
+    },
+    "Q3": {
+      "topic": "Oxen.ai",
+      "expected_chunks": ["4d313c5..."],
+      "retrieved_chunks": ["4d313c5... (rank 1)"],
+      "retrieval_status": "CORRECT",
+      "generation_status": "INCOMPLETE (2/5 completeness)",
+      "expected_answer_details": ["5 private repositories", "unlimited public repositories", "50GB storage", "50GB data transfer"],
+      "generated_answer_provided": ["Only '5 private repositories'"],
+      "root_cause": "Weak system prompt — model optimized for brevity over completeness",
+      "fix_status": "APPLIED (enhanced system prompt for completeness)"
+    },
+    "Q4": {
+      "topic": "MLOps Tools Comparison",
+      "expected_chunks": ["2ded0e69...", "db991e4d..."],
+      "retrieved_chunks": ["db991e4d... (rank 3)"],
+      "retrieval_status": "PARTIAL (1/2 chunks, 2ded0e69... missing)",
+      "generation_status": "NO ANSWER (1/5 relevance)",
+      "root_cause": "Chunk 2ded0e69... not retrieved — semantic gap for multi-course comparison",
+      "fix_status": "NOT YET APPLIED (requires index investigation)"
+    },
+    "Q5": {
+      "topic": "Parametri Grid Search",
+      "expected_chunks": ["4b7865b...", "42469c7..."],
+      "retrieved_chunks": ["4b7865b... (rank 1)", "42469c7... (rank 2)"],
+      "retrieval_status": "CORRECT",
+      "generation_status": "CORRECT (5/5 all scores)",
+      "notes": "Technical content fits within 1200 chars, truncation didn't affect this query"
+    }
+  },
+
+  "next_steps": [
+    "Re-run RAG evaluation with --mode rag_eval --top_k 10 to verify fixes for Q1, Q2, Q3",
+    "Investigate chunk 2ded0e69... via search_debug to understand why it wasn't retrieved for Q4",
+    "Consider query expansion or re-writing for multi-source comparison queries",
+    "Update golden-set-ground-truth.json if query definitions need alignment"
+  ],
+
+  "references": {
+    "run_eval.py_line_146": "Context truncation: text.strip().replace('\\n', ' ')[:1200]",
+    "run_eval.py_line_159-162": "Original system prompt (too generic)",
+    "run_eval.py_line_206": "build_rag_context uses max_chunks=10 for RAG eval"
+  }
+}
