@@ -19,16 +19,16 @@ def test_ingest_offline_smoke(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_query_offline_smoke(monkeypatch: pytest.MonkeyPatch) -> None:
-    async def fake_ask(request: ChatRequest) -> ChatResponse:
+    async def fake_ask(request: ChatRequest, usage_limits=None) -> ChatResponse:
         return ChatResponse(
-            answer="ok",
+            answer="mocked answer",
             sources=[
                 ChunkResult(
-                    title="T",
-                    text_snippet="snippet",
+                    title="test note",
+                    text_snippet="test content",
                     source="notion",
-                    category="cat",
-                    file="file.md",
+                    category="test",
+                    file="test.md",
                 )
             ],
         )
@@ -37,7 +37,8 @@ def test_query_offline_smoke(monkeypatch: pytest.MonkeyPatch) -> None:
     client = TestClient(app)
     resp = client.post("/query", json={"question": "hello"})
     assert resp.status_code == 200
-    assert resp.json() == {"answer": "ok", "sources": ["T"]}
+    # /query endpoint extracts source titles from ChatResponse.sources
+    assert resp.json() == {"answer": "mocked answer", "sources": ["test note"]}
 
 
 @pytest.mark.integration
