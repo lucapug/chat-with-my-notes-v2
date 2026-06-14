@@ -20,19 +20,22 @@ JUDGE_RUBRIC_WITH_GT = (
     "La risposta attesa è la verità. Se il sistema RAG dice 'non presente' "
     "ma la risposta attesa contiene informazioni concrete, il sistema ha FALLITO "
     "il retrieval, non ha avuto successo.\n\n"
+    "IMPORTANTE: Valuta la risposta rispetto allo SCOPE DELLA DOMANDA, non rispetto alla completezza della ground truth. "
+    "Se la domanda chiede un dato specifico e la risposta lo fornisce correttamente, completeness deve essere 5, "
+    "anche se la ground truth contiene dettagli aggiuntivi non richiesti dalla domanda.\n\n"
     "Assegna un punteggio da 1 a 5 per ogni criterio:\n"
-    "- accuracy: la risposta RAG è fattualmente equivalente alla risposta attesa? "
+    "- accuracy: la risposta RAG è fattualmente equivalente alla risposta attesa rispetto alla domanda? "
     "(1=completamente diversa, 5=equivalente)\n"
-    "- completeness: la risposta RAG copre tutti i dettagli presenti nella "
-    "risposta attesa? (1=vuota o mancante, 5=tutti i dettagli presenti)\n"
-    "- hallucination: la risposta RAG contiene informazioni NON presenti nella "
-    "risposta attesa? (1=estese invenzioni, 5=nessuna invenzione)\n"
+    "- completeness: la risposta RAG copre tutte le informazioni richieste dalla domanda? "
+    "(1=mancano informazioni critiche, 5=tutte le informazioni richieste presenti)\n"
+    "- hallucination: la risposta RAG contiene informazioni false o contraddittorie? "
+    "(1=estese invenzioni o falsità, 5=nessuna allucinazione). NOTA: Non penalizzare informazioni extra vere che non sono nella ground truth.\n"
     "- relevance: la risposta RAG è pertinente alla domanda? "
     "(1=fuori tema, 5=completamente pertinente)\n\n"
     "Outcome logic:\n"
-    "- fail: se qualsiasi criterio <= 2\n"
-    "- warning: tutti >= 3 ma almeno uno < 5\n"
-    "- pass: tutti = 5\n\n"
+    "- fail: accuracy <= 2 OR hallucination <= 2\n"
+    "- warning: tutti >= 3 ma almeno uno < 5, oppure completeness <= 2 con accuracy >= 4\n"
+    "- pass: accuracy >= 4 AND completeness >= 4 AND hallucination >= 4 AND relevance >= 4\n\n"
     "Rispondi SOLO con JSON in questo formato, nessun altro testo:\n"
     '{"accuracy": N, "completeness": N, "hallucination": N, '
     '"relevance": N, "outcome": "pass|warning|fail", '
@@ -148,16 +151,37 @@ async def judge_answer(
             {"role": "system", "content": rubric},
             {"role": "user", "content": user_msg},
         ],
-        "num_predict": 2048,
+        "num_predict": 4096,
         "stream": False,
     }
 
-    async with httpx.AsyncClient(timeout=180.0) as client:
-        resp = await client.post(
-            f"{settings.ollama_judge_url}/chat/completions",
-            json=payload,
-        )
-        resp.raise_for_status()
-        data = resp.json()
+    async with httpx.AsyncClient(timeout=300.0) as client:
+        try:
+            resp = await client.post(
+                f"{settings.ollama_judge_url}/chat/completions",
+                json=payload,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except httpx.TimeoutException as exc:
+            logger.error(
+                "judge_answer: timeout after 300 seconds, model=%s, query=%s",
+                settings.ollama_judge_model,
+                query,
+            )
+            raise
+        except httpx.HTTPStatusError as exc:
+            logger.error(
+                "judge_answer: HTTP error status=%s body=%s",
+                exc.response.status_code,
+                exc.response.text,
+            )
+            raise
+        except ValueError as exc:
+            logger.error(
+                "judge_answer: invalid JSON response body=%s",
+                resp.text if 'resp' in locals() else '<no response>',
+            )
+            raise
 
     return extract_judge_scores(data["choices"][0]["message"])

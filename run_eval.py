@@ -30,10 +30,15 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_GROUND_TRUTH_PATH = Path(__file__).resolve().parent / "evaluation" / "golden-set-ground-truth.json"
 DEFAULT_SEARCH_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "search_eval.json"
-DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v5.json"
+DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v10.json"
 VALID_MODES = {"brf", "semantic", "fusion", "rag_eval", "all"}
 SEARCH_EVAL_SCHEMA_VERSION = "v1"
-QUERY_TIMEOUT_SECONDS = 240
+QUERY_TIMEOUT_SECONDS = 600
+GENERATION_TIMEOUT_SECONDS = 300
+JUDGE_TIMEOUT_SECONDS = 300
+MAX_GENERATION_RETRIES = 3
+RETRY_BACKOFF_SECONDS = [2, 4, 8]
+WARMUP_TIMEOUT_SECONDS = 300
 
 
 class IsoJSONEncoder(json.JSONEncoder):
@@ -137,15 +142,36 @@ def build_run_id(mode: str) -> str:
     return f"search_eval_{mode}_{now}"
 
 
-async def build_rag_context(chunks: list[dict[str, Any]], max_chunks: int = 5) -> str:
+async def warmup_ollama_endpoint(url: str, model: str, system_prompt: str | None = None) -> None:
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt or "Sei un modello LLM di servizio. Rispondi brevemente."},
+            {"role": "user", "content": "Please respond with a short acknowledgement: OK."},
+        ],
+        "max_tokens": 8,
+        "num_predict": 8,
+        "stream": False,
+    }
+
+    async with httpx.AsyncClient(timeout=WARMUP_TIMEOUT_SECONDS) as client:
+        try:
+            resp = await client.post(f"{url}/chat/completions", json=payload)
+            resp.raise_for_status()
+            logger.info("warmup_ollama_endpoint successful %s %s", model, url)
+        except Exception as exc:
+            logger.warning("warmup_ollama_endpoint failed for %s @ %s: %s", model, url, exc)
+
+
+async def build_rag_context(chunks: list[dict[str, Any]], top_k: int) -> str:
     context_parts: list[str] = []
-    for i, chunk in enumerate(chunks[:max_chunks], start=1):
+    for i, chunk in enumerate(chunks[:top_k], start=1):
         title = chunk.get("title", "")
         file = chunk.get("file", "")
         text = chunk.get("text", "")
-        # Increased from 1200 to 3000 to preserve full content for complex financial/technical documents
-        # Preserve newlines for structure (lists, tables, callouts)
-        excerpt = text.strip()[:3000]
+        # v10: eGPU Thunderbolt3 optimization - minimal context (600 chars)
+        # Thunderbolt3 PCIe bottleneck makes long contexts very expensive
+        excerpt = text.strip()[:600]
         context_parts.append(
             f"--- CHUNK {i} ---\nTitle: {title}\nFile: {file}\nText: {excerpt}\n"
         )
@@ -159,10 +185,9 @@ async def generate_answer(query: str, context: str) -> str:
             {
                 "role": "system",
                 "content": (
-                    "You are a helpful assistant. Answer the user's question using only the provided context. "
-                    "Be EXHAUSTIVE and COMPLETE: list ALL relevant details, numerical values, and specific information present in the context. "
-                    "Do NOT summarize or omit details. If multiple items are listed in the context, list them ALL. "
-                    "If the answer is not found, say that the information is not present in the context."
+                    "Sei un assistente utile e preciso. Rispondi alla domanda usando SOLO il contesto fornito. "
+                    "Cita le informazioni rilevanti, evita la conoscenza esterna, e sii esplicito quando riporti valori numerici. "
+                    "Se l'informazione non è presente nel contesto, dì che non è disponibile nel contesto."
                 ),
             },
             {
@@ -170,26 +195,120 @@ async def generate_answer(query: str, context: str) -> str:
                 "content": f"Domanda: {query}\n\nContesto:\n{context}",
             },
         ],
-        "max_tokens": 2048,
+        "max_tokens": 4096,
+        "num_predict": 4096,
         "stream": False,
     }
 
-    async with httpx.AsyncClient(timeout=QUERY_TIMEOUT_SECONDS) as client:
-        resp = await client.post(
-            f"{settings.ollama_generation_url}/chat/completions",
-            json=payload,
-        )
-        resp.raise_for_status()
-        data = resp.json()
+    last_exc: Exception | None = None
+    for attempt in range(1, MAX_GENERATION_RETRIES + 1):
+        async with httpx.AsyncClient(timeout=GENERATION_TIMEOUT_SECONDS) as client:
+            try:
+                resp = await client.post(
+                    f"{settings.ollama_generation_url}/chat/completions",
+                    json=payload,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+            except (httpx.TimeoutException, httpx.TransportError, httpx.HTTPStatusError) as exc:
+                last_exc = exc
+                logger.warning(
+                    "generate_answer: attempt %s/%s failed (%s): %s",
+                    attempt,
+                    MAX_GENERATION_RETRIES,
+                    type(exc).__name__,
+                    exc,
+                )
+                if attempt == MAX_GENERATION_RETRIES:
+                    raise
+                await asyncio.sleep(RETRY_BACKOFF_SECONDS[min(attempt - 1, len(RETRY_BACKOFF_SECONDS) - 1)])
+                continue
+            except ValueError as exc:
+                logger.warning(
+                    "generate_answer: attempt %s/%s invalid JSON response: %s",
+                    attempt,
+                    MAX_GENERATION_RETRIES,
+                    exc,
+                )
+                last_exc = exc
+                if attempt == MAX_GENERATION_RETRIES:
+                    raise
+                await asyncio.sleep(RETRY_BACKOFF_SECONDS[min(attempt - 1, len(RETRY_BACKOFF_SECONDS) - 1)])
+                continue
+            except Exception as exc:
+                logger.error(
+                    "generate_answer: attempt %s/%s unexpected error %r",
+                    attempt,
+                    MAX_GENERATION_RETRIES,
+                    exc,
+                )
+                raise
 
-    choice = data["choices"][0]
+        choices = data.get("choices")
+        if not isinstance(choices, list) or not choices:
+            logger.warning(
+                "generate_answer: attempt %s/%s malformed response, choices missing: %s",
+                attempt,
+                MAX_GENERATION_RETRIES,
+                data,
+            )
+            last_exc = ValueError("Malformed response from generation API: missing choices")
+            if attempt == MAX_GENERATION_RETRIES:
+                raise last_exc
+            await asyncio.sleep(RETRY_BACKOFF_SECONDS[min(attempt - 1, len(RETRY_BACKOFF_SECONDS) - 1)])
+            continue
+
+        choice = choices[0]
+        finish_reason = choice.get("finish_reason", "unknown")
+        message = choice.get("message") or {}
+        content = str(message.get("content") or "").strip()
+        if not content:
+            content = str(message.get("reasoning") or "").strip()
+
+        if not content:
+            logger.warning(
+                "generate_answer: attempt %s/%s empty content with finish_reason=%s model=%s",
+                attempt,
+                MAX_GENERATION_RETRIES,
+                finish_reason,
+                data.get("model", "unknown"),
+            )
+            last_exc = ValueError("Empty content from generation API")
+            if attempt == MAX_GENERATION_RETRIES:
+                raise last_exc
+            await asyncio.sleep(RETRY_BACKOFF_SECONDS[min(attempt - 1, len(RETRY_BACKOFF_SECONDS) - 1)])
+            continue
+
+        logger.info(
+            "generate_answer: finish_reason=%s, content_length=%d, model=%s",
+            finish_reason,
+            len(content),
+            data.get("model", "unknown"),
+        )
+        return content
+
+    raise last_exc if last_exc is not None else ValueError("generate_answer failed without exception")
+
+    choice = choices[0]
     finish_reason = choice.get("finish_reason", "unknown")
-    content = str(choice["message"]["content"] or "").strip()
+    message = choice.get("message") or {}
+    content = str(message.get("content") or "").strip()
+    if not content:
+        content = str(message.get("reasoning") or "").strip()
+
+    logger.info(
+        "generate_answer: finish_reason=%s, content_length=%d, model=%s",
+        finish_reason,
+        len(content),
+        data.get("model", "unknown"),
+    )
     if not content:
         logger.warning(
-            "generate_answer: empty content — finish_reason=%s, model=%s",
+            "generate_answer: empty content — finish_reason=%s, model=%s, context_length=%d, response=%s",
             finish_reason,
             data.get("model", "unknown"),
+            len(context),
+            data,
         )
     return content
 
@@ -201,12 +320,13 @@ async def _run_single_rag_query(
 ) -> tuple[list[dict[str, Any]], str, dict[str, Any], dict[str, float]]:
     query_start = perf_counter()
 
+    # Use consistent top_k for both retrieval and context
     retrieval_start = perf_counter()
     retrieved_chunks = await retrieve_results(query, top_k, "fusion")
     retrieval_seconds = perf_counter() - retrieval_start
 
     generation_start = perf_counter()
-    context = await build_rag_context(retrieved_chunks, max_chunks=10)
+    context = await build_rag_context(retrieved_chunks, top_k)
     try:
         generated_answer = await generate_answer(query.query, context)
     except Exception as exc:
@@ -422,6 +542,8 @@ def main() -> int:
         return 0
 
     if args.mode == "rag_eval":
+        asyncio.run(warmup_ollama_endpoint(settings.ollama_generation_url, settings.ollama_generation_model))
+        asyncio.run(warmup_ollama_endpoint(settings.ollama_judge_url, settings.ollama_judge_model))
         report = asyncio.run(run_rag_eval(golden_queries, args.top_k))
         print_summary(report)
         output_path = args.output if args.output != DEFAULT_SEARCH_EVAL_OUTPUT else DEFAULT_RAG_EVAL_OUTPUT
@@ -429,6 +551,16 @@ def main() -> int:
         return 0
 
     if args.mode == "all":
+        asyncio.run(warmup_ollama_endpoint(settings.ollama_generation_url, settings.ollama_generation_model))
+        asyncio.run(warmup_ollama_endpoint(settings.ollama_judge_url, settings.ollama_judge_model))
+        search_report = asyncio.run(run_search_eval(golden_queries, args.top_k, "all"))
+        print_summary(search_report)
+        save_report(search_report, args.output)
+
+        rag_report = asyncio.run(run_rag_eval(golden_queries, args.top_k))
+        print_summary(rag_report)
+        save_report(rag_report, DEFAULT_RAG_EVAL_OUTPUT)
+        return 0
         search_report = asyncio.run(run_search_eval(golden_queries, args.top_k, "all"))
         print_summary(search_report)
         save_report(search_report, args.output)
