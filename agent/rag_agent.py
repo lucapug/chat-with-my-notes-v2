@@ -24,7 +24,10 @@ SYSTEM_PROMPT = (
     "- se l'informazione NON è nei chunk: "
     "  'Non ho trovato questa informazione nelle tue note.'; "
     "- NON usare conoscenza esterna; "
-    "- rispondi in italiano, conciso."
+    "- rispondi in italiano, conciso. "
+    "- CRITICAL: Quando riporti valori numerici, sii ESPlicito su cosa ogni numero si riferisce. "
+    "Usa il formato 'X si riferisce a Y' o 'per Z: valore = X' per evitare confusione. "
+    "Se il contesto menziona più valori numerici (es. tau_L=45, tau_Ab=20), riportali tutti separatamente con etichette chiare."
 )
 
 
@@ -42,7 +45,7 @@ _model = OpenAIChatModel(
         base_url=settings.ollama_generation_url,
         api_key="ollama",  # Ollama does not require a real key
     ),
-    settings=OpenAIModelSettings(max_tokens=512),
+    settings=OpenAIModelSettings(max_tokens=4096),
 )
 
 _generation_agent = Agent(
@@ -112,7 +115,7 @@ async def search_vault(ctx: RunContext[VaultDeps], query: str) -> str:
     parts = [
         f"[{r.get('title', '')}] "
         f"(category: {r.get('category', '')}, file: {r.get('file', '')})\n"
-        f"{r.get('text', '')[:2500]}"
+        f"{r.get('text', '')[:1000]}"
         for r in results
     ]
     logger.debug("search_vault: end results=%s", len(results))
