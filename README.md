@@ -102,12 +102,33 @@ Evaluation results are saved to `evaluation/` with timestamped filenames:
 - `rag_eval_*.json` — Full pipeline results with judge scores
 - `failure_log.json` — Detailed failure tracking (deprecated in v2, replaced by structured eval outputs)
 
+## Test Suite Status
+The project has 23 automated tests covering core functionality:
+
+| Category | Tests | Status |
+|---|---|---|
+| API smoke tests (offline) | 2 | ✅ All pass |
+| API smoke tests (integration) | 2 | ✅ All pass |
+| Configuration | 2 | ✅ All pass |
+| Golden set parsing | 3 | ✅ All pass |
+| Judge score extraction | 4 | ✅ All pass |
+| Notion adapter | 5 | ✅ All pass |
+| Evaluation utilities | 5 | ✅ All pass |
+
+**Run tests**:
+```bash
+cd chat-with-my-notes-v2
+pytest tests/ -v
+```
+
+Note: Integration tests require the FastAPI server running (`uvicorn main:app --reload`) and Ollama models available.
+
 ## Known Limitations
 | Item | Status |
 |---|---|
 | DERP relay latency | ✅ Resolved — dedicated Ollama instances with stable context |
 | Long-context queries | ✅ Resolved — `gemma4-8k:latest` with 8192 token context |
-| `num_predict` mapping | ✅ Resolved — using `num_predict=512` in Modelfile |
+| `num_predict` mapping | ✅ Resolved — updated Modelfile to `num_predict=4096` |
 | Judge rubric calibration | 📋 Planned — Sprint 2 recall@k metric improvement |
 | Golden set size | 📋 Planned — expand from 5 to 50–200 queries |
 
@@ -126,3 +147,6 @@ The `pydantic-ai` Agent in `agent/rag_agent.py` is **active** and powers the pro
 | Medium | Incremental sync endpoint (`POST /sync`) | 📋 Planned for Sprint 2 |
 | Medium | Recall@k metric (not binary) | 📋 Planned for Sprint 2 |
 | Low | Highlighting support in API | 📋 Planned for Sprint 2 |
+| Low | Unit tests for search modules (`brf.py`, `semantic.py`, `fusion.py`) | 📋 Planned for Sprint 2 |
+| Low | Unit tests for `ingest/orchestrator.py` | 📋 Planned for Sprint 2 |
+| Low | Integration tests for `/chat` and `GET /index/info` endpoints | 📋 Planned for Sprint 2 |

@@ -1,113 +1,316 @@
 {
-  "_description": "Analysis of 4/5 failures in rag_eval_fusion_k10_v5.json (Phase 3 Evaluation)",
-  "_date": "2026-06-12",
+  "_description": "Analysis of RAG evaluation results from rag_eval_fusion_k10_v5.json",
+  "_date": "2026-06-14",
   "_eval_file": "rag_eval_fusion_k10_v5.json",
-  "_fix_applied": true,
-  "_fix_details": "run_eval.py: context truncation 1200→3000 chars, removed text flattening, enhanced system prompt for completeness",
-  
+  "_fix_applied": false,
+  "_fix_details": "Analysis of current v5 failures; fixes not yet applied",
+
   "summary": {
     "total_queries": 5,
     "passed": 1,
-    "failed": 4,
-    "pass_rate": 0.2
+    "failed": 3,
+    "parse_error": 1,
+    "pass_rate": 0.2,
+    "queries_with_retrieval_issues": 2,
+    "queries_with_generation_issues": 2,
+    "queries_with_judge_issues": 1
   },
 
   "root_causes": [
     {
-      "pattern": "Generation Completeness",
-      "affected_queries": ["Q1", "Q2", "Q3"],
-      "description": "Retrieval was correct (expected chunk in #1), but generator produced incomplete answers by omitting details present in retrieved chunks.",
+      "pattern": "Generation Collapse on Long Context",
+      "affected_queries": ["Q1"],
+      "description": "Retrieval was perfect (expected chunk rank 1), but generator produced an empty answer despite successful retrieval and 36s generation time.",
       "causes": [
-        "Context truncated to 1200 characters in build_rag_context() line 146 — cut off ~50% of chunk content for Q1",
-        "Text flattening (replace('\\n', ' ')) destroyed list/table structure",
-        "System prompt too generic — no instruction to be exhaustive or list all details"
-      ],
-      "fixes_applied": [
-        "Increased context excerpt from 1200 to 3000 characters",
-        "Removed replace('\\n', ' ') to preserve text structure",
-        "Enhanced system prompt: 'Be EXHAUSTIVE and COMPLETE: list ALL relevant details, numerical values, and specific information present in the context. Do NOT summarize or omit details.'"
-      ]
-    },
-    {
-      "pattern": "Retrieval Failure",
-      "affected_queries": ["Q4"],
-      "description": "Expected chunk 2ded0e69... was not retrieved in top-10 results. Only 1/2 expected chunks found.",
-      "causes": [
-        "Query requires bridging multiple sources (MLOps Zoomcamp DTC vs MLOps in 4 Weeks)",
-        "Semantic search may not have enough overlap with chunk content",
-        "Chunk may not exist in index or embedding quality issue"
+        "Model failure to handle ~30k character context (10 chunks × 3000 chars)",
+        "Possible max_tokens exhaustion or finish_reason not logged",
+        "Generative model (llama3) may have quality degradation with very long contexts",
+        "Previous v4 issue 'void answers → num_predict too small' not fully resolved"
       ],
       "fixes_needed": [
-        "Verify chunk 2ded0e69... exists in index via search_debug",
-        "Consider query expansion for multi-source comparison queries",
-        "Investigate embedding quality for technical terms (DVC, MLOps course names)"
-      ]
+        "Add finish_reason logging to generate_answer() to identify truncation",
+        "Experiment with smaller max_chunks (e.g., 5 instead of 10) to reduce context length",
+        "Consider using a model with better long-context handling (llama3.1, mistral, etc.)",
+        "Test with increased max_tokens generation limit (currently 2048 in run_eval.py)"
+      ],
+      "fix_status": "NOT APPLIED"
+    },
+    {
+      "pattern": "Retrieval Failure - Technical Term",
+      "affected_queries": ["Q3"],
+      "description": "Expected chunk containing '5 private repositories' for Oxen.ai was not retrieved in top-10. Retrieved only unrelated LLM integration chunks.",
+      "causes": [
+        "Chunk '4d313c5...' may not be indexed (needs verification)",
+        "Embedding model (nomic-embed-text) may not effectively capture 'Oxen.ai repositories privati'",
+        "BRF search may miss term matches if 'repositories' or 'privati' have tokenization issues",
+        "Hybrid fusion (RRF) may not boost the correct chunk if it's low-ranked in both lists"
+      ],
+      "fixes_needed": [
+        "Run debug script to verify chunk '4d313c5...' exists in both BRF and semantic indexes",
+        "If chunk missing, check ingestion pipeline (source file parsing)",
+        "If chunk present, analyze embeddings and BRF scores for this chunk",
+        "Consider query expansion: 'Oxen.ai' -> 'Oxen AI', 'private repos', 'repository count'",
+        "Test separate BRF vs semantic performance on this query"
+      ],
+      "fix_status": "NOT APPLIED"
+    },
+    {
+      "pattern": "Retrieval Partial - Multi-Source Comparison",
+      "affected_queries": ["Q4"],
+      "description": "Only 1/2 expected chunks retrieved. Got 'MLops in 4 week' chunk but missed 'Move data versioning Git→DVC' chunk from MLOps Zoomcamp DTC.",
+      "causes": [
+        "Query requires bridging information across two course sources (Zoomcamp vs 4 Weeks)",
+        "Semantic search may prioritize one course context over the other",
+        "BRF may miss the specific phrase 'Move data versioning Git→DVC' due to tokenization",
+        "Hybrid fusion doesn't explicitly optimize for multi-source coverage"
+      ],
+      "fixes_needed": [
+        "Verify chunk 'db991e4d...' exists in indexes (BROKEN_LINK issue mentioned in docs)",
+        "If chunk exists, analyze why it's not retrieved: embedding distance, BRF rank",
+        "Consider query rewriting: split into two queries (one per course) then merge results",
+        "Increase top_k from 10 to 20 for multi-source queries",
+        "Add query expansion with course-specific terms (Zoomcamp, DTC, MLops in 4 weeks)"
+      ],
+      "fix_status": "NOT APPLIED"
+    },
+    {
+      "pattern": "Generation Error - Numerical Confusion",
+      "affected_queries": ["Q5"],
+      "description": "Retrieval was correct (both expected chunks in top-10), but generator returned wrong values (tau_Ab=14, tau_L=67 instead of tau_Ab=20, tau_L=45). Multiple tau values exist in vault; model failed to select the 'grid search Huber Loss' context.",
+      "causes": [
+        "Model lacks discriminative reasoning for numerical values in similar contexts",
+        "System prompt doesn't emphasize careful numerical extraction",
+        "Context includes multiple tau pairs (14,67 in 9217084b; 20,45 in 094d931+7fe2bf9; 20,62; 20,63)",
+        "Generator picked the first encountered pair (14,67) instead of the VirusWatch grid search result"
+      ],
+      "fixes_needed": [
+        "Enhance system prompt: 'When multiple numerical values exist, carefully match the specific context requested'",
+        "Consider chain-of-thought prompting for numerical queries: 'First identify all tau values, then select the one matching the query criteria'",
+        "Test with different generation models (gemma4:e4b may have better reasoning)",
+        "Add explicit instruction to 'DO NOT guess if multiple values exist - report the specific one matching the query context'"
+      ],
+      "fix_status": "NOT APPLIED"
+    },
+    {
+      "pattern": "Judge Parse Error",
+      "affected_queries": ["Q5"],
+      "description": "Judge LLM returned truncated JSON/JSON-like content that extract_judge_scores() couldn't parse. Result: parse_error=true, verdict='unknown'.",
+      "causes": [
+        "Judge response was longer than context limit (raw_content truncated at 300 chars)",
+        "Gemini-style 'reasoning' field may contain structured output but extraction logic fails",
+        "Judge model (llama3) may have inconsistent JSON output formatting",
+        "num_predict=2048 may be insufficient for complex reasoning cases"
+      ],
+      "fixes_needed": [
+        "Increase num_predict in judge.py from 2048 to 4096",
+        "Improve extract_judge_scores() regex patterns to handle partial JSON",
+        "Add fallback to parse reasoning field more aggressively",
+        "Consider using gemma4:e4b as judge (better structured output handling)",
+        "Log full judge response for debugging even if parsing fails"
+      ],
+      "fix_status": "NOT APPLIED"
+    },
+    {
+      "pattern": "Evaluation vs Production Divergence",
+      "affected_queries": ["All"],
+      "description": "run_eval.py uses different prompts, models, and parameters than production rag_agent.py. Evaluation results may not represent real system performance.",
+      "causes": [
+        "run_eval.py: system prompt in English, simple prompt, max_tokens=2048, httpx direct calls",
+        "rag_agent.py: system prompt in Italian, structured prompt, max_tokens=4096, pydantic-ai abstraction",
+        "Different error handling and logging approaches",
+        "Evaluation uses offline generation, production uses agent framework"
+      ],
+      "fixes_needed": [
+        "Align run_eval.py generation with rag_agent.py parameters (Italian prompt, max_tokens=4096)",
+        "Consider extracting generate_answer logic to shared module",
+        "Document evaluation limitations and potential divergence from production",
+        "Run production-style evaluation via API endpoint to validate alignment"
+      ],
+      "fix_status": "NOT APPLIED"
     }
   ],
 
   "per_query_analysis": {
     "Q1": {
       "topic": "Spese Tecnologiche",
-      "expected_chunks": ["76ada2e..."],
-      "retrieved_chunks": ["76ada2e... (rank 1)"],
-      "retrieval_status": "CORRECT",
-      "generation_status": "INCOMPLETE (2/5 completeness)",
-      "expected_answer_excerpts": ["GH Copilot: 100 euro/anno", "Z.ai: 36/72 euro", "Brave Premium: 130 euro/anno", "AI Shipping Labs: 500 euro", "HuggingFace: prospettiva abbonamento", "Oracle Cloud PAYG", "GLM Coding Lite: $96/anno"],
-      "generated_answer_omitted": ["HuggingFace", "Oracle Cloud", "GLM Coding Lite"],
-      "root_cause": "Context truncated at 1200 chars cut off bottom half of financial list",
-      "fix_status": "APPLIED (context 3000 chars should preserve full list)"
+      "query": "Quali sono le mie spese tecnologiche fisse annuali per il lavoro?",
+      "expected_chunks": ["76ada2eed43a4afc7a73d2247cd0e84608db75e2"],
+      "retrieved_chunks": ["76ada2eed43a4afc7a73d2247cd0e84608db75e2 (rank 1)"],
+      "retrieval_status": "CORRECT (1/1, rank 1)",
+      "generated_answer": "\"\" (empty string)",
+      "generation_status": "FAILURE (empty, 36.3s generation time)",
+      "judge_verdict": "fail",
+      "expected_answer_excerpts": [
+        "GH Copilot: 100 euro/anno",
+        "Z.ai endpoint: 36 euro primo anno, 72 euro a regime",
+        "Brave Premium: 130 euro/anno",
+        "AI Shipping Labs: 500 euro/anno",
+        "HuggingFace: prospettiva di abbonarmi",
+        "Oracle Cloud PAYG / Always Free",
+        "GLM Coding Lite-Yearly Plan: $96/anno"
+      ],
+      "root_cause": "Generation collapse: model produced empty response despite correct retrieval and 30k char context",
+      "fix_status": "NOT APPLIED - requires finish_reason logging and context length optimization"
     },
     "Q2": {
       "topic": "Alibi Detect",
-      "expected_chunks": ["e411cd0..."],
-      "retrieved_chunks": ["e411cd0... (rank 1)"],
-      "retrieval_status": "CORRECT",
-      "generation_status": "TOO BRIEF (1/5 completeness)",
-      "expected_answer_details": ["Alibi Detect = data drift analysis", "NOT data versioning", "monitoraggio statistico", "valutazione previsione vs ground truth"],
-      "generated_answer_provided": ["Correct answer but minimal (1 sentence)"],
-      "root_cause": "Weak system prompt — no instruction to provide exhaustive context",
-      "fix_status": "APPLIED (enhanced system prompt for completeness)"
+      "query": "Alibi Detect di Seldon serve a data versioning o a data drift analysis?",
+      "expected_chunks": ["e411cd037e6dee95a6972a30f365fcae94eecbd3"],
+      "retrieved_chunks": ["e411cd037e6dee95a6972a30f365fcae94eecbd3 (rank 1)"],
+      "retrieval_status": "CORRECT (1/1, rank 1)",
+      "generated_answer": "Alibi Detect serve a data drift analysis.",
+      "generation_status": "CORRECT (concise but accurate)",
+      "judge_verdict": "pass",
+      "judge_scores": {
+        "accuracy": 5,
+        "completeness": 5,
+        "hallucination": 5,
+        "relevance": 5,
+        "outcome": "pass"
+      },
+      "root_cause": "None - this query demonstrates that the system works correctly for simple factual questions",
+      "fix_status": "N/A - baseline working case"
     },
     "Q3": {
       "topic": "Oxen.ai",
-      "expected_chunks": ["4d313c5..."],
-      "retrieved_chunks": ["4d313c5... (rank 1)"],
-      "retrieval_status": "CORRECT",
-      "generation_status": "INCOMPLETE (2/5 completeness)",
-      "expected_answer_details": ["5 private repositories", "unlimited public repositories", "50GB storage", "50GB data transfer"],
-      "generated_answer_provided": ["Only '5 private repositories'"],
-      "root_cause": "Weak system prompt — model optimized for brevity over completeness",
-      "fix_status": "APPLIED (enhanced system prompt for completeness)"
+      "query": "Quanti repositories privati sono inclusi nel piano free di Oxen.ai?",
+      "expected_chunks": ["4d313c5e085aeaab2fd991f0544f862842f99cf3"],
+      "retrieved_chunks": [
+        "82f74838... (rank 1, unrelated LLM integration)",
+        "other chunks unrelated to Oxen pricing"
+      ],
+      "retrieval_status": "FAILURE (0/1 expected chunks found)",
+      "generated_answer": "Non ho trovato questa informazione nelle tue note.",
+      "generation_status": "CORRECT (honestly reports missing info)",
+      "judge_verdict": "fail",
+      "root_cause": "Retrieval failure: chunk '4d313c5...' not found in top-10 despite existing in ground truth",
+      "fix_status": "NOT APPLIED - requires debug script to verify chunk existence in indexes"
     },
     "Q4": {
       "topic": "MLOps Tools Comparison",
-      "expected_chunks": ["2ded0e69...", "db991e4d..."],
-      "retrieved_chunks": ["db991e4d... (rank 3)"],
-      "retrieval_status": "PARTIAL (1/2 chunks, 2ded0e69... missing)",
-      "generation_status": "NO ANSWER (1/5 relevance)",
-      "root_cause": "Chunk 2ded0e69... not retrieved — semantic gap for multi-course comparison",
-      "fix_status": "NOT YET APPLIED (requires index investigation)"
+      "query": "DVC viene usato nel corso MLOps Zoomcamp DTC, nel corso MLOps in 4 Weeks, o in entrambi?",
+      "expected_chunks": [
+        "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
+        "db991e4d79f9f6b641e6b08521dc0e58a61a98d3"
+      ],
+      "retrieved_chunks": [
+        "2ded0e69... (rank 1, MLops in 4 week)",
+        "09936730... (rank 2, MLOps Zoomcamp DTC week2)",
+        "c177597d... (rank 3, MLOps Zoomcamp DTC week2)",
+        "db991e4d... (MISSING - expected chunk)"
+      ],
+      "retrieval_status": "PARTIAL (1/2 expected chunks, missing db991e4d...)",
+      "generated_answer": "In base ai documenti forniti, DVC viene utilizzato nel corso MLOps Zoomcamp DTC.",
+      "generation_status": "PARTIAL (mentions only one course, not both)",
+      "judge_verdict": "fail",
+      "judge_reasoning": "Risposta parziale: non menziona 'MLOps in 4 Weeks' come richiesto nella risposta attesa",
+      "root_cause": "Retrieval limitation: multi-source comparison query retrieves only partial context (1/2 expected chunks)",
+      "fix_status": "NOT APPLIED - requires query expansion or increased top_k for multi-source queries"
     },
     "Q5": {
       "topic": "Parametri Grid Search",
-      "expected_chunks": ["4b7865b...", "42469c7..."],
-      "retrieved_chunks": ["4b7865b... (rank 1)", "42469c7... (rank 2)"],
-      "retrieval_status": "CORRECT",
-      "generation_status": "CORRECT (5/5 all scores)",
-      "notes": "Technical content fits within 1200 chars, truncation didn't affect this query"
+      "query": "Quali valori di tau_L e tau_Ab ha prodotto la grid search con Huber Loss su VirusWatch?",
+      "expected_chunks": [
+        "094d931cec9d08e9c78809375365e553eabfa70c",
+        "7fe2bf9a4b3df99362f4acbc28d433242ce0607a"
+      ],
+      "retrieved_chunks": [
+        "094d931c... (rank 1, VirusWatch Huber Loss)",
+        "7fe2bf9a... (rank 6, VirusWatch Huber Loss)",
+        "9217084b... (rank 5, tau_Ab=14, tau_L=67 - initial estimate)"
+      ],
+      "retrieval_status": "CORRECT (2/2 expected chunks in top-10)",
+      "generated_answer": "In base ai documenti forniti... $\\tau_{Ab}$ (tau_Ab): 14, $\\tau_{L}$ (tau_L): 67",
+      "generation_status": "FAILURE (returned 14/67 instead of 20/45)",
+      "judge_verdict": "unknown (parse_error)",
+      "judge_result": {
+        "parse_error": true,
+        "raw_content": "truncated JSON"
+      },
+      "expected_answer": "tau_Ab a 20 e tau_L_hat = 45 come valore ottimale",
+      "root_cause": "Generation error: model selected wrong numerical values (14/67 from chunk 9217084b instead of 20/45 from chunks 094d931+7fe2bf9). Judge parsing error prevented proper scoring.",
+      "fix_status": "NOT APPLIED - requires enhanced numerical extraction in generation prompt + judge parsing improvements"
     }
   },
 
   "next_steps": [
-    "Re-run RAG evaluation with --mode rag_eval --top_k 10 to verify fixes for Q1, Q2, Q3",
-    "Investigate chunk 2ded0e69... via search_debug to understand why it wasn't retrieved for Q4",
-    "Consider query expansion or re-writing for multi-source comparison queries",
-    "Update golden-set-ground-truth.json if query definitions need alignment"
+    {
+      "priority": "HIGH",
+      "task": "Fix generation collapse on long context (Q1)",
+      "actions": [
+        "Add finish_reason logging to run_eval.py generate_answer()",
+        "Test with max_chunks=5 instead of 10 to reduce context length",
+        "Experiment with increased max_tokens from 2048 to 4096",
+        "Verify model health and context window limits"
+      ],
+      "verification": "Re-run Q1 and confirm non-empty generated_answer"
+    },
+    {
+      "priority": "HIGH",
+      "task": "Investigate missing chunk for Q3 (Oxen.ai)",
+      "actions": [
+        "Create debug script to check if chunk '4d313c5e...' exists in BRF and semantic indexes",
+        "If missing: debug ingestion pipeline (source file parsing)",
+        "If present: analyze embedding distance and BRF scores",
+        "Test query expansion: 'Oxen AI', 'private repos', 'repository count'"
+      ],
+      "verification": "Script output shows chunk existence and retrieval scores"
+    },
+    {
+      "priority": "MEDIUM",
+      "task": "Improve multi-source retrieval (Q4)",
+      "actions": [
+        "Verify chunk 'db991e4d...' exists in indexes (check for BROKEN_LINK)",
+        "Test with top_k=20 for multi-source comparison queries",
+        "Implement query splitting: one query per course, then merge results",
+        "Add course-specific terms to query expansion"
+      ],
+      "verification": "Re-run Q4 with top_k=20 and retrieve both expected chunks"
+    },
+    {
+      "priority": "MEDIUM",
+      "task": "Fix numerical confusion in generation (Q5)",
+      "actions": [
+        "Enhance system prompt: emphasize careful numerical matching",
+        "Implement chain-of-thought for numerical queries",
+        "Test with different generation model (gemma4:e4b)",
+        "Add explicit instruction to avoid guessing on multiple values"
+      ],
+      "verification": "Re-run Q5 and confirm correct values (20/45) returned"
+    },
+    {
+      "priority": "MEDIUM",
+      "task": "Fix judge parsing errors",
+      "actions": [
+        "Increase num_predict in judge.py from 2048 to 4096",
+        "Improve extract_judge_scores() regex patterns for partial JSON",
+        "Add fallback parsing for reasoning field",
+        "Log full judge response for debugging"
+      ],
+      "verification": "Re-run Q5 and confirm no parse_error, valid verdict"
+    },
+    {
+      "priority": "LOW",
+      "task": "Align evaluation with production",
+      "actions": [
+        "Update run_eval.py generation to use Italian prompt matching rag_agent.py",
+        "Extract generate_answer logic to shared module",
+        "Document evaluation limitations and production divergence",
+        "Run production-style evaluation via API endpoint"
+      ],
+      "verification": "Compare run_eval.py results with API endpoint results"
+    }
   ],
 
   "references": {
-    "run_eval.py_line_146": "Context truncation: text.strip().replace('\\n', ' ')[:1200]",
-    "run_eval.py_line_159-162": "Original system prompt (too generic)",
-    "run_eval.py_line_206": "build_rag_context uses max_chunks=10 for RAG eval"
+    "run_eval.py_line_140_152": "build_rag_context: max_chunks=10, excerpt 3000 chars",
+    "run_eval.py_line_155_194": "generate_answer: max_tokens=2048, no finish_reason logging",
+    "run_eval.py_line_209": "_run_single_rag_query uses build_rag_context with max_chunks=10",
+    "judge.py_line_64_109": "extract_judge_scores: handles gemma4 thinking mode, regex fallback",
+    "judge.py_line_148_156": "judge_answer: num_predict=2048, judge rubric",
+    "rag_agent.py_line_45": "Production agent uses max_tokens=4096",
+    "rag_agent.py_line_17_28": "Production system prompt in Italian, structured",
+    "golden-set-ground-truth.json": "Expected answers and chunk_ids for all queries",
+    "git_commit_ee00d91": "v4 results: 'still void answers to judge -> num_predict too small'"
   }
 }

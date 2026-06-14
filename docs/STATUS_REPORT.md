@@ -46,8 +46,26 @@
 - 6 June: aligned fusion, evaluation, and golden-set mapping on canonical `chunk_id`; completed Search Eval pipeline with BRF 1.0/0.9 and Fusion 1.0/1.0 at `k=10`
 - 8 June: added `rag_eval` support and configuration env loading fix; added config env path loader test; recorded RAG evaluation output artifacts
 
+### Sprint 2 — Week 6 (June 9–12, 2026): test suite stabilization + production fix
+- 12 June: comprehensive test suite audit — verified all 23 tests against current codebase
+- 12 June: fixed `test_query_offline_smoke` — aligned fake `ask()` signature with router's
+  `usage_limits` parameter; corrected response assertion for `/query` endpoint format
+- 12 June: hardened `test_config.py` — replaced hardcoded model name assertion with generic
+  non-empty string check
+- 12 June: diagnosed and resolved `test_query_integration_smoke` 500 error:
+  root cause was `num_predict=512` hardcoded in Ollama Modelfile for `gemma4-8k:latest`,
+  limiting output tokens regardless of API `max_tokens` parameter
+- 12 June: updated `rag_agent.py` — increased `max_tokens` from 512 to 4096;
+  reduced chunk context in `search_vault` tool from 2500 to 1000 chars to stay within
+  8192 context window
+- 12 June: updated Ollama Modelfile on Minisforum — `num_predict=4096`, `num_ctx=8192`
+- 12 June: all 23 tests passing (including integration tests with live server)
+- 12 June: added Test Suite Status section and Sprint 2 test enhancements to README
+
 ### Sprint 2 planning notes
 - `Recall@k` metric update: move from binary hit/miss to ratio-based scoring for multi-chunk queries
 - `evaluation/generated/` folder: separate exploratory runs from baseline artifacts
 - Expand golden set to 50–200 queries via stratified LLM generation
 - Gmail/chat export adapters are still placeholders; source coverage incomplete
+- Test coverage gaps: unit tests for `src/search` modules (`brf.py`, `semantic.py`, `fusion.py`),
+  `ingest/orchestrator.py`, integration tests for `/chat` and `GET /index/info` endpoints

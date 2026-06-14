@@ -18,16 +18,16 @@
       "expected_chunk_ids": [
         "e411cd037e6dee95a6972a30f365fcae94eecbd3"
       ],
-      "expected_answer": "Seldon Alibi Detect serve a data drift analysis, non a data versioning. È usato per individuare e monitorare cambiamenti statistici nei dati in input, non per gestire la versione dei file di dati."
+      "expected_answer": "Serve a data drift analysis, non a data versioning."
     },
     {
       "id": "Q3",
       "topic": "Oxen.ai",
       "query": "Quanti repositories privati sono inclusi nel piano free di Oxen.ai?",
       "expected_chunk_ids": [
-        "4d313c5e085aeaab2fd991f0544f862842f99cf3"
+        "ffab8ee4ec92453c7f65d9931de1761c7f17d836"
       ],
-      "expected_answer": "Il piano free di Oxen.ai include: 5 private repositories (inclusi nel piano free), unlimited public repositories, 50GB di storage, 50GB di data transfer (entrambi espandibili). L'informazione si trova nella nota 'Lavorare in Python' nella sezione 'Oxen AI (Data Version control system)', all'interno di un callout di Notion."
+      "expected_answer": "Il piano free include 5 private repositories."
     },
     {
       "id": "Q4",
@@ -37,7 +37,7 @@
         "2ded0e693f64be5b54cda41b20a24b50d4f185ba",
         "db991e4d79f9f6b641e6b08521dc0e58a61a98d3"
       ],
-      "expected_answer": "DVC viene usato in entrambi i corsi. Nel corso MLOps Zoomcamp DTC viene usato per la data versioning spostando i dati da Git a DVC, mentre nel corso MLOps in 4 Weeks viene usato come parte della pipeline iterativa insieme a CML."
+      "expected_answer": "Entrambi. DVC viene usato sia nel corso MLOps Zoomcamp DTC (per data versioning) sia nel corso MLOps in 4 Weeks (nella pipeline iterativa con CML). NOTA: Il chunk 'MLops in 4 week' e molto scarno; la risposta corretta richiede inferenza da entrambi i chunk recuperati."
     },
     {
       "id": "Q5",
