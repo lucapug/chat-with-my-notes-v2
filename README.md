@@ -78,7 +78,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 - `GET /index/info` — Index metadata
 - `POST /ingest` — Trigger ingestion from configured sources
 
-## Sprint 2 Evaluation Results
+## Sprint 1 Evaluation Results
 
 ### Search Evaluation (Retrieval)
 | Mode | Hit Rate@10 | MRR |
@@ -87,14 +87,28 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 | Semantic | 0.600 | 0.192 |
 | Fusion | 1.00 | 1.00 |
 
-All retrieval modes tested on 5-query golden set with SHA1-verified chunk IDs.
+All retrieval modes tested on the 5-query golden set and reported in `evaluation/rag_eval_fusion_k10_v11.json`.
 
 ### RAG Evaluation (End-to-End)
 - **Generator**: `gemma4-8k:latest` (8192 token context)
 - **Judge**: `gemma4:e4b`
 - **Results**: 5/5 queries completed successfully
-- **Avg timing**: Retrieval 10.6s, Generation 18.9s, Judge 19.5s, Total 49.0s
-- **No timeouts** - full GPU execution confirmed (RTX 3090)
+- **Report**: `evaluation/rag_eval_fusion_k10_v11.json`
+- **Run ID**: `search_eval_rag_eval_20260617T081433Z`
+- **Mode**: `rag_eval`
+- **top_k**: `10`
+- **Date**: `2026-06-17T08:14:33.418731Z`
+- **No timeouts** - full evaluation completed successfully
+
+### Execution timings
+Per-query timings from the v11 RAG evaluation run:
+- QQ1: retrieval=6.1s generation=33.2s judge=26.6s total=65.9s
+- QQ2: retrieval=6.4s generation=20.6s judge=24.3s total=51.2s
+- QQ3: retrieval=8.2s generation=16.9s judge=17.3s total=42.3s
+- QQ4: retrieval=5.3s generation=43.7s judge=27.1s total=76.1s
+- QQ5: retrieval=8.4s generation=54.5s judge=28.2s total=91.1s
+
+This timing breakdown reflects the full RAG pipeline with retrieval, answer generation, and judge scoring for each golden query.
 
 ## Output Files
 Evaluation results are saved to `evaluation/` with timestamped filenames:
