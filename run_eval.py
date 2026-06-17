@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_GROUND_TRUTH_PATH = Path(__file__).resolve().parent / "evaluation" / "golden-set-ground-truth.json"
 DEFAULT_SEARCH_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "search_eval.json"
-DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v10.json"
+DEFAULT_RAG_EVAL_OUTPUT = Path(__file__).resolve().parent / "evaluation" / "rag_eval_fusion_k10_v11.json"
 VALID_MODES = {"brf", "semantic", "fusion", "rag_eval", "all"}
 SEARCH_EVAL_SCHEMA_VERSION = "v1"
 QUERY_TIMEOUT_SECONDS = 600
@@ -169,9 +169,9 @@ async def build_rag_context(chunks: list[dict[str, Any]], top_k: int) -> str:
         title = chunk.get("title", "")
         file = chunk.get("file", "")
         text = chunk.get("text", "")
-        # v10: eGPU Thunderbolt3 optimization - minimal context (600 chars)
-        # Thunderbolt3 PCIe bottleneck makes long contexts very expensive
-        excerpt = text.strip()[:600]
+        # Use a larger chunk excerpt to preserve more relevant content for the
+        # RAG generator while staying within the model's 8192 token context.
+        excerpt = text.strip()[:1200]
         context_parts.append(
             f"--- CHUNK {i} ---\nTitle: {title}\nFile: {file}\nText: {excerpt}\n"
         )
@@ -195,7 +195,6 @@ async def generate_answer(query: str, context: str) -> str:
                 "content": f"Domanda: {query}\n\nContesto:\n{context}",
             },
         ],
-        "max_tokens": 4096,
         "num_predict": 4096,
         "stream": False,
     }
