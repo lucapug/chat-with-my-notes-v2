@@ -164,3 +164,5 @@ The `pydantic-ai` Agent in `agent/rag_agent.py` is **active** and powers the pro
 | Low | Unit tests for search modules (`brf.py`, `semantic.py`, `fusion.py`) | 📋 Planned for Sprint 2 |
 | Low | Unit tests for `ingest/orchestrator.py` | 📋 Planned for Sprint 2 |
 | Low | Integration tests for `/chat` and `GET /index/info` endpoints | 📋 Planned for Sprint 2 |
+
+> Sprint 2 note: the current production pipeline is not yet fully aligned with the experimental local pipeline. The local `run_eval.py` path uses direct Ollama HTTP calls with `num_predict=4096` and a controlled local context build, while production currently uses `pydantic-ai` with `max_tokens` semantics and a different agent/tool workflow. This will be realigned in the future to ensure fidelity of the production process with respect to local experimentation.
