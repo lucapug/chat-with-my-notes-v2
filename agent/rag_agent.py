@@ -45,7 +45,7 @@ _model = OpenAIChatModel(
         base_url=settings.ollama_generation_url,
         api_key="ollama",  # Ollama does not require a real key
     ),
-    settings=OpenAIModelSettings(max_tokens=4096),
+    settings=OpenAIModelSettings(max_tokens=1024),
 )
 
 _generation_agent = Agent(
@@ -112,12 +112,19 @@ async def search_vault(ctx: RunContext[VaultDeps], query: str) -> str:
     if not results:
         logger.debug("search_vault: end (no results)")
         return "Nessun chunk trovato nel vault."
-    parts = [
-        f"[{r.get('title', '')}] "
-        f"(category: {r.get('category', '')}, file: {r.get('file', '')})\n"
-        f"{r.get('text', '')[:1000]}"
-        for r in results
-    ]
+
+    MAX_TOOL_CHUNK_TEXT = 300
+    parts = []
+    for r in results:
+        text = r.get("text", "") or ""
+        snippet = text[:MAX_TOOL_CHUNK_TEXT]
+        if len(text) > MAX_TOOL_CHUNK_TEXT:
+            snippet += "..."
+        parts.append(
+            f"[{r.get('title', '')}] "
+            f"(category: {r.get('category', '')}, file: {r.get('file', '')})\n"
+            f"{snippet}"
+        )
     logger.debug("search_vault: end results=%s", len(results))
     return "\n---\n".join(parts)
 
