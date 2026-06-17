@@ -61,46 +61,147 @@ JUDGE_RUBRIC_NO_GT = (
 )
 
 
-def extract_judge_scores(msg: dict) -> dict:
-    """Extract structured scores from judge response.
+def _normalize_text_field(value: str | list | dict | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        normalized_parts: list[str] = []
+        for item in value:
+            normalized_parts.append(_normalize_text_field(item))
+        return "\n".join([p for p in normalized_parts if p])
+    if isinstance(value, dict):
+        if "text" in value or "content" in value:
+            return _normalize_text_field(value.get("text") or value.get("content"))
+        normalized_parts: list[str] = []
+        for item in value.values():
+            normalized_parts.append(_normalize_text_field(item))
+        return "\n".join([p for p in normalized_parts if p])
+    return str(value)
 
-    Handles gemma4:e4b thinking mode (content may be empty; falls back
-    to reasoning). Strategy:
-      1. Find JSON with 'outcome' key in content
-      2. Find JSON in reasoning
-      3. Regex-extract individual scores from reasoning text
-      4. Return parse_error flag as last resort
-    """
-    content = msg.get("content") or ""
-    reasoning = msg.get("reasoning") or ""
 
-    for text in [content, reasoning]:
-        cleaned = re.sub(r"```json\s*", "", text)
-        cleaned = re.sub(r"```\s*", "", cleaned)
-        match = re.search(r'\{.*?"outcome".*?\}', cleaned, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(0))
-            except json.JSONDecodeError:
-                pass
+def _try_load_json(candidate: str) -> dict | None:
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        candidate = re.sub(r",\s*([}\]])", r"\1", candidate)
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            return None
 
-    # Regex fallback: extract individual numeric scores from reasoning
-    scores: dict = {}
+
+def _extract_json_with_outcome(text: str) -> dict | None:
+    if not text:
+        return None
+
+    cleaned = re.sub(r"```json\s*", "", text, flags=re.IGNORECASE)
+    cleaned = re.sub(r"```\s*", "", cleaned, flags=re.IGNORECASE)
+
+    match = re.search(r"\{.*?\"outcome\".*?\}", cleaned, re.DOTALL)
+    if match:
+        parsed = _try_load_json(match.group(0))
+        if parsed is not None:
+            return parsed
+
+    fenced = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL | re.IGNORECASE)
+    if fenced:
+        parsed = _try_load_json(fenced.group(1))
+        if parsed is not None:
+            return parsed
+
+    # Partial JSON / truncated output fallback: extract numeric values from available text.
+    partial = _extract_scores_from_text(cleaned)
+    if partial is not None:
+        return partial
+
+    # Balanced braces fallback.
+    start = cleaned.find("{")
+    while start != -1:
+        depth = 0
+        for i, char in enumerate(cleaned[start:], start=start):
+            if char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    candidate = cleaned[start : i + 1]
+                    if "\"outcome\"" in candidate:
+                        parsed = _try_load_json(candidate)
+                        if parsed is not None:
+                            return parsed
+                    break
+        start = cleaned.find("{", start + 1)
+
+    return None
+
+
+def _extract_scores_from_text(text: str) -> dict | None:
+    scores: dict[str, int | str] = {}
     for criterion in ["accuracy", "completeness", "hallucination", "relevance"]:
-        m = re.search(
-            rf"\**{criterion}\**:\s*\**\s*(\d+)", reasoning, re.IGNORECASE
-        )
+        m = re.search(rf'"?{criterion}"?\s*[:=]\s*(\d+)', text, re.IGNORECASE)
         if m:
             scores[criterion] = int(m.group(1))
 
-    if scores:
-        tail = reasoning.lower()[-200:]
+    if not scores:
+        return None
+
+    outcome_match = re.search(r'"?outcome"?\s*[:=]\s*"(pass|warning|fail)"', text, re.IGNORECASE)
+    if outcome_match:
+        outcome = outcome_match.group(1).lower()
+    elif re.search(r"\bpass\b", text, re.IGNORECASE):
+        outcome = "pass"
+    elif re.search(r"\bfail\b", text, re.IGNORECASE):
+        outcome = "fail"
+    else:
         outcome = "warning"
-        if "pass" in tail:
+
+    reasoning_match = re.search(r'"?reasoning"?\s*[:=]\s*"([^"]*)"', text, re.IGNORECASE)
+    if reasoning_match:
+        scores["reasoning"] = reasoning_match.group(1)
+
+    return {**scores, "outcome": outcome}
+
+
+def extract_judge_scores(msg: dict) -> dict:
+    """Extract structured scores from judge response.
+
+    Handles non-ideal judge output, including JSON blocks, markdown fences,
+    and message content encoded as lists or nested objects.
+    """
+    content = _normalize_text_field(msg.get("content"))
+    reasoning = _normalize_text_field(msg.get("reasoning"))
+
+    for text in [content, reasoning]:
+        parsed = _extract_json_with_outcome(text)
+        if parsed is not None:
+            return parsed
+
+    partial = _extract_scores_from_text(f"{content}\n{reasoning}")
+    if partial is not None:
+        return partial
+
+    # Regex fallback: extract individual numeric scores from reasoning or content.
+    scores: dict = {}
+    for criterion in ["accuracy", "completeness", "hallucination", "relevance"]:
+        for source in [reasoning, content]:
+            m = re.search(
+                rf"\b{criterion}\b\s*[:=]\s*(\d+)", source, re.IGNORECASE
+            )
+            if m:
+                scores[criterion] = int(m.group(1))
+                break
+
+    if scores:
+        combined = f"{reasoning}\n{content}".lower()
+        if re.search(r"\bpass\b", combined):
             outcome = "pass"
-        elif "fail" in tail:
+        elif re.search(r"\bfail\b", combined):
             outcome = "fail"
-        return {**scores, "outcome": outcome, "note": "extracted from reasoning"}
+        else:
+            outcome = "warning"
+        return {**scores, "outcome": outcome, "note": "extracted from reasoning/content"}
 
     return {
         "parse_error": True,

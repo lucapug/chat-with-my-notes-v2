@@ -37,3 +37,13 @@ def test_extract_judge_scores_parse_error() -> None:
     assert result.get("parse_error") is True
     assert "raw_content" in result
     assert "raw_reasoning" in result
+
+
+def test_extract_judge_scores_from_truncated_json_block() -> None:
+    msg = {
+        "content": "```json\n{\n  \"accuracy\": 3,\n  \"completeness\": 3,\n  \"hallucination\": 5,\n  \"relevance\": 5,\n  \"outcome\": \"warning\",\n  \"reasoning\": \"La risposta è corretta fino a un certo punto",
+    }
+    result = extract_judge_scores(msg)
+    assert result["outcome"] == "warning"
+    assert result["accuracy"] == 3
+    assert result["relevance"] == 5
