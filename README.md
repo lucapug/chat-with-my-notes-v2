@@ -1,9 +1,9 @@
 # chat-with-my-notes-v2
 
 ## Project Overview
-A standalone RAG assistant and evaluation pipeline for a personal knowledge base built from Notion notes, self-sent emails, and chat exports. Existing repository work reflects Sprint 1 delivery, while planned enhancements are scoped for Sprint 2. This repo is part of AI Shipping Labs Sprint 2 and provides a production-ready FastAPI application with comprehensive search and RAG evaluation capabilities.
+A standalone RAG assistant and evaluation pipeline for a personal knowledge base currently built from **Notion notes**. Adapters for self-sent emails (Gmail) and chat exports are stubbed and planned for a later sprint (see Roadmap). Existing repository work reflects Sprint 1 delivery, while planned enhancements are scoped for Sprint 2. This repo is part of AI Shipping Labs Sprint 2 and provides a production-ready FastAPI application with comprehensive search and RAG evaluation capabilities.
 
-The system uses **Bilingual Retrieval Fusion (BRF)** for mixed Italian/English content, hybrid lexical-semantic search, and LLM-as-judge evaluation on a golden set. All retrievals achieve perfect Hit Rate@10 with MRR=1.00.
+The system uses **Bilingual Retrieval Fusion (BRF)** for mixed Italian/English content, hybrid lexical-semantic search, and LLM-as-judge evaluation on a golden set. On the 5-query golden set, BRF and the hybrid Fusion achieve perfect Hit Rate@10 (MRR 0.90 and 1.00 respectively); the Semantic-only path scores Hit Rate 0.60 / MRR 0.19 and is intended to complement — not replace — the lexical path.
 
 ## Architecture
 - **BRF (Bilingual Retrieval Fusion)**: Italian query → translation via Ollama judge → dual TF-IDF search (IT + EN) → RRF fusion with k=60
@@ -83,11 +83,11 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ### Search Evaluation (Retrieval)
 | Mode | Hit Rate@10 | MRR |
 |---|---|---|
-| BRF | 1.00 | 1.00 |
-| Semantic | 0.600 | 0.192 |
+| BRF | 1.00 | 0.90 |
+| Semantic | 0.60 | 0.19 |
 | Fusion | 1.00 | 1.00 |
 
-All retrieval modes tested on the 5-query golden set and reported in `evaluation/rag_eval_fusion_k10_v11.json`.
+All retrieval modes tested on the 5-query golden set. Per-mode metrics are stored in `evaluation/search_eval_{brf,semantic,fusion}_k10_v2.json`; the end-to-end RAG run (retrieval + generation + judge) is in `evaluation/rag_eval_fusion_k10_v11.json`.
 
 ### RAG Evaluation (End-to-End)
 - **Generator**: `gemma4-8k:latest` (8192 token context)
@@ -99,6 +99,8 @@ All retrieval modes tested on the 5-query golden set and reported in `evaluation
 - **top_k**: `10`
 - **Date**: `2026-06-17T08:14:33.418731Z`
 - **No timeouts** - full evaluation completed successfully
+
+> Note: model names are documented here and in `docs/`/`scripts/` and configured locally via `.env`. The run artifact (`rag_eval_fusion_k10_v11.json`) stores per-query judge scores and timings but does not currently embed the generator/judge model identifiers, so the configuration is reproducible via `.env` rather than self-contained in the JSON.
 
 ### Execution timings
 Per-query timings from the v11 RAG evaluation run:
@@ -117,15 +119,15 @@ Evaluation results are saved to `evaluation/` with timestamped filenames:
 - `failure_log.json` — Detailed failure tracking (deprecated in v2, replaced by structured eval outputs)
 
 ## Test Suite Status
-The project has 23 automated tests covering core functionality:
+The project has 24 automated tests covering core functionality:
 
 | Category | Tests | Status |
 |---|---|---|
 | API smoke tests (offline) | 2 | ✅ All pass |
-| API smoke tests (integration) | 2 | ✅ All pass |
+| API smoke tests (integration) | 2 | ✅ Pass (require running server + Ollama) |
 | Configuration | 2 | ✅ All pass |
-| Golden set parsing | 3 | ✅ All pass |
-| Judge score extraction | 4 | ✅ All pass |
+| Golden set parsing | 3 | ⚠️ 1 fails (golden-set chunk_id drift, see note) |
+| Judge score extraction | 5 | ✅ All pass |
 | Notion adapter | 5 | ✅ All pass |
 | Evaluation utilities | 5 | ✅ All pass |
 
@@ -135,7 +137,7 @@ cd chat-with-my-notes-v2
 pytest tests/ -v
 ```
 
-Note: Integration tests require the FastAPI server running (`uvicorn main:app --reload`) and Ollama models available.
+Note: Integration tests require the FastAPI server running (`uvicorn main:app --reload`) and Ollama models available. The currently failing test (`test_load_golden_set_contains_expected_chunk_ids_for_q1_q2_q3_q4_q5`) holds a hardcoded `expected_chunk_id` for Q3 that drifted from the updated golden set; it will be fixed as part of the Sprint 2 stable `chunk_id` work.
 
 ## Known Limitations
 | Item | Status |
@@ -145,6 +147,8 @@ Note: Integration tests require the FastAPI server running (`uvicorn main:app --
 | `num_predict` mapping | ✅ Resolved — updated Modelfile to `num_predict=4096` |
 | Judge rubric calibration | 📋 Planned — Sprint 2 recall@k metric improvement |
 | Golden set size | 📋 Planned — expand from 5 to 50–200 queries |
+
+> **Deployment context.** The limitations above were observed on the distributed hardware setup used while building the app: two physical PCs, each with an external GPU (eGPU), interconnected over a VPN via Tailscale. In this topology the generation, judge, and embedding models run as separate Ollama instances, one per machine, and the traffic between them crosses the Tailscale overlay network. This explains the DERP relay latency item in particular: when Tailscale could not establish a direct peer connection it fell back to the DERP relay, adding round-trip latency to every Ollama HTTP call; moving to dedicated Ollama instances with stable, larger contexts removed the regressive cost. These constraints are specific to the distributed two-node + eGPU + Tailscale setup and do not affect a single-host deployment.
 
 ## pydantic-ai Integration
 The `pydantic-ai` Agent in `agent/rag_agent.py` is **active** and powers the production FastAPI endpoints (`POST /chat`, `POST /query`). It uses a single `search_vault` tool for hybrid BRF + semantic retrieval with graceful degradation.
@@ -156,8 +160,8 @@ The `pydantic-ai` Agent in `agent/rag_agent.py` is **active** and powers the pro
 |---|---|---|
 | High | Stable H3-based `chunk_id` | 🔄 Partial (SHA1 in use for eval) |
 | High | Golden set expansion (50–200 queries) | 📋 Planned for Sprint 2 |
-| Medium | Gmail adapter (self-sent emails) | 📋 Planned for Sprint 2 |
-| Medium | Chat export adapter | 📋 Planned for Sprint 2 |
+| Medium | Gmail adapter (self-sent emails) | 📋 Stubbed (`src/ingest/adapters/gmail.py` returns empty), not yet implemented |
+| Medium | Chat export adapter | 📋 Stubbed (`src/ingest/adapters/chat_export.py` returns empty), not yet implemented |
 | Medium | Incremental sync endpoint (`POST /sync`) | 📋 Planned for Sprint 2 |
 | Medium | Recall@k metric (not binary) | 📋 Planned for Sprint 2 |
 | Low | Highlighting support in API | 📋 Planned for Sprint 2 |
